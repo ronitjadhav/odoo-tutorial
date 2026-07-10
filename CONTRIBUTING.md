@@ -9,10 +9,9 @@ a PR directly. Odoo moves fast and chapters go stale — factual fixes are alway
 **Adding content?** Follow the chapter template used by every page: *Why this matters ·
 Concepts · Hands-on · Verify · Gotchas · Quick check · Exercises · Further reading*.
 
-Quizzes are authored as a ` ```quiz ` fenced block: `Q:` starts a question, `+ `/`- `
-mark correct/wrong options, `> ` is the explanation shown after answering. Chapters
-with hands-on work should also register checks in `code/odoolings.py` so readers can
-verify their module automatically.
+Chapters are MDX files in `web/content/docs/`. Quizzes use the `<Quiz>` component
+(see chapter 1 for the shape). Chapters with hands-on work should also register
+checks in `code/odoolings.py` so readers can verify their module automatically.
 
 Two rules:
 

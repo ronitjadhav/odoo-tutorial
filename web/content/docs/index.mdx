@@ -1,0 +1,45 @@
+---
+title: How this tutorial works
+description: What Zero to Odoo Expert is, who it's for, and how to get the most out of it.
+---
+
+This tutorial takes a competent Python developer with **zero Odoo knowledge** to the
+point of contributing OCA-quality modules. It is not a rewrite of the
+[official Odoo docs](https://www.odoo.com/documentation/18.0/) — it links to them
+generously and adds what they leave out: sequencing, the *why*, the pitfalls, and the
+practices real Odoo integrators use every day.
+
+## Built for practice, not reading
+
+You build one project — **LibreFleet**, a vehicle-workshop and service-booking app —
+across 40 chapters. Along the way:
+
+- **Quizzes** give instant feedback right in the page (try one in
+  [chapter 1](/docs/00-orientation/01-what-odoo-is#quick-check)).
+- **`odoolings`**, a rustlings-style checker, inspects your *actually running* Odoo
+  after each hands-on section:
+
+  ```console
+  $ python odoolings.py check ch09
+  ✔ model libre.vehicle exists
+  ✘ field mileage is Float
+      hint: fields.Float, not fields.Integer — odometers have decimals.
+  ```
+
+- **Checkpoints** — every chapter's final state lives in
+  [`code/checkpoints/`](https://github.com/ronitjadhav/odoo-tutorial/tree/main/code/checkpoints),
+  so you can diff your work against a known-good state whenever you're stuck.
+- **Progress and streaks** live in the pill at the bottom-right — stored only in your
+  browser, no account needed.
+
+Everything targets **Odoo 18.0 Community** in Docker. Chapters flag where Odoo 19 differs.
+
+## The path
+
+| Tier | Parts | You can... |
+|---|---|---|
+| Foundations | 0–3 | build and ship a clean custom module |
+| Professional | 4–5 | extend core apps safely, write tests, build UI, debug anything |
+| Expert | 6–7 | work the OCA way, migrate modules, tune performance, reason about deploys |
+
+Start with [What Odoo Is](/docs/00-orientation/01-what-odoo-is).

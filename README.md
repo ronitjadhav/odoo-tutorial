@@ -10,7 +10,7 @@ learn Odoo myself.
 
 | Path | Contents |
 |---|---|
-| `docs/` | The tutorial (Markdown, built with MkDocs Material) |
+| `web/` | The site — Next.js + Fumadocs, statically exported to GitHub Pages |
 | `code/addons/` | LibreFleet, the capstone module, in its final state |
 | `code/odoolings.py` | rustlings-style CLI that checks your work against each chapter's goals |
 | `code/checkpoints/` | A snapshot of LibreFleet after each chapter |
@@ -28,14 +28,13 @@ Then open <http://localhost:8069> and create a database. Master password is `adm
 ## Preview the site locally
 
 ```bash
-pip install -r requirements-docs.txt
-mkdocs serve
+cd web && npm install && npm run dev
 ```
 
 ## Status
 
-M0 complete: site skeleton and dev environment. Chapters are stubs — see the
-[roadmap](docs/roadmap.md).
+M0 complete: interactive platform (quizzes, progress, odoolings checker) and dev
+environment. Chapters are stubs — see the roadmap on the site.
 
 ## License
 

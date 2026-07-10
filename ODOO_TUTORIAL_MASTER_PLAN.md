@@ -51,7 +51,7 @@ diff their work against a known-good state at any point.
 |---|----------|--------|-----------|
 | D1 | Odoo version to teach | **Odoo 18.0 Community** as the baseline, with "What changed in 19" callout boxes | The author's team shared the 18.0 docs; 18 is in the middle of the 3-version support window (17/18/19 as of mid-2026); most client projects at integrators run n-1 or n-2. Odoo 20 arrives ~Oct 2026 — plan a version-bump pass afterwards, don't chase it now. |
 | D2 | Edition | **Community (open source)** | Enterprise source is not freely redistributable; Community is what OCA targets; everything learned transfers. Mention Enterprise-only features in info boxes. |
-| D3 | Site generator | **MkDocs + Material for MkDocs theme** | Python-native (fits the Odoo world), Markdown-based, excellent search, code annotations, tabs, admonitions, dark mode, trivial GitHub Pages deploy via Actions. (Alternative considered: Docusaurus — heavier, React-based, no advantage here.) |
+| D3 | Site generator | ~~MkDocs + Material~~ → **Next.js + Fumadocs + Tailwind (shadcn aesthetic)**, static-exported (revised 2026-07-10, see changelog) | The author wants an interactive, product-feel learning platform, not a docs site. Fumadocs provides docs plumbing (search, sidebar, MDX, dark mode) out of the box; custom React components add quizzes, progress/streaks, and the landing page. Static export keeps GitHub Pages hosting free. |
 | D4 | Hosting | **GitHub Pages** via GitHub Actions on push to `main` | Free, zero-ops, requested by the author. |
 | D5 | Repo layout | **Two repos**: `odoo-tutorial` (site) and `odoo-tutorial-code` (chapter-by-chapter module code) — or one monorepo with `/docs` and `/code`; monorepo preferred for simplicity | Keeps site deploys clean while letting readers clone runnable code. Start monorepo; split later only if needed. |
 | D6 | Dev environment taught | **Docker Compose first** (Odoo + PostgreSQL), with a "native install" appendix | Reproducible on Linux/macOS/Windows; mirrors how integrators (incl. Camptocamp, which is Docker-heavy in its platform tooling) actually run projects. |
@@ -433,9 +433,41 @@ executes every hands-on section personally (that's the learning).
 - pre-commit / pylint-odoo: `OCA/pylint-odoo`, OCA addons repo template
 
 ## 9. Open Questions for the Author (answer before M1)
-1. Monorepo OK, and repo name? (default: `odoo-tutorial`)
+1. ~~Monorepo OK, and repo name?~~ **Answered 2026-07-10: monorepo, `odoo-tutorial`.**
 2. Capstone domain sign-off: LibreFleet, or a domain you personally enjoy more?
 3. Will your team confirm the Odoo version your projects run? If most client work is
    on 16/17, add a short "working on older versions" appendix.
-4. Public from day 1, or private until M3 quality bar is met? (Recommend: public
-   early — it creates accountability.)
+4. ~~Public from day 1?~~ **Answered 2026-07-10: public from day 1.**
+
+---
+
+## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-10 — M0 shipped, then rebuilt as an interactive platform
+- **M0 done** on the original MkDocs stack: monorepo `ronitjadhav/odoo-tutorial`
+  created, 40 chapter stubs, GitHub Pages deploy, Docker env verified end-to-end
+  (DB create + app install checked via psql).
+- **Pivot: the tutorial is an interactive learning platform, not a docs site**
+  (author decision). Duolingo-inspired but practice-first. Three mechanics:
+  1. **Quizzes** per chapter with instant feedback (`<Quiz>` MDX component).
+  2. **`odoolings`** (`code/odoolings.py`) — rustlings-style stdlib-only CLI that
+     verifies the reader's work against their *running* Odoo over XML-RPC, with
+     hints. Each chapter registers checks as it is written. First checks: ch05.
+  3. **Progress + streaks** — localStorage only (pill bottom-right, per-chapter
+     "mark complete"). No accounts/backend by design; revisit only if a real
+     learner community shows up.
+- **D3 revised**: MkDocs → **Next.js 16 + Fumadocs (base-ui) + Tailwind 4**, in
+  `web/`, static-exported with basePath `/odoo-tutorial`. Search is Orama static
+  (`/api/search` index generated at build). Landing page is a custom React page.
+  MkDocs files removed.
+- **Authoring implications for future chapters (agent: follow these):**
+  - Chapters are `.mdx` in `web/content/docs/<part>/<NN-slug>.mdx` with
+    frontmatter `title`/`description`; part nav order lives in each folder's
+    `meta.json`. Chapter template of §4.3 now includes a **Quick check** section
+    (quiz) between Gotchas and Exercises.
+  - Every chapter with hands-on work must also add `odoolings` checks —
+    "Verify" sections reference `python odoolings.py check chNN`.
+- **Still open:** capstone sign-off (LibreFleet?), team's Odoo version.
+- **Deferred with known ceiling:** odoolings checks all live in one file (split
+  per chapter when it outgrows ~300 lines); sidebar completion checkmarks;
+  quiz state isn't persisted (retaking is a feature for now).
