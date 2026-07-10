@@ -25,6 +25,11 @@ theme:
       scheme: slate
       toggle: {icon: material/weather-sunny, name: Light mode}
 
+extra_css:
+  - assets/css/tutorial.css
+extra_javascript:
+  - assets/js/tutorial.js
+
 markdown_extensions:
   - admonition
   - attr_list
@@ -40,6 +45,9 @@ markdown_extensions:
       custom_fences:
         - name: mermaid
           class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: quiz
+          class: quiz
           format: !!python/name:pymdownx.superfences.fence_code_format
 
 nav:

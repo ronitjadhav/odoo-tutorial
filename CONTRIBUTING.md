@@ -7,7 +7,14 @@ you can send.
 a PR directly. Odoo moves fast and chapters go stale — factual fixes are always welcome.
 
 **Adding content?** Follow the chapter template used by every page: *Why this matters ·
-Concepts · Hands-on · Verify · Gotchas · Exercises · Further reading*. Two rules:
+Concepts · Hands-on · Verify · Gotchas · Quick check · Exercises · Further reading*.
+
+Quizzes are authored as a ` ```quiz ` fenced block: `Q:` starts a question, `+ `/`- `
+mark correct/wrong options, `> ` is the explanation shown after answering. Chapters
+with hands-on work should also register checks in `code/odoolings.py` so readers can
+verify their module automatically.
+
+Two rules:
 
 1. **Original prose only.** Never paste text from the Odoo docs, books, or blog posts.
    Link to them instead.

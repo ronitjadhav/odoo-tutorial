@@ -17,6 +17,23 @@ so you can diff your work against a known-good state whenever you get stuck.
 Everything targets **Odoo 18.0 Community**, running in Docker. Chapters flag where
 Odoo 19 differs.
 
+This is not a read-only site — it's built for practice:
+
+- **Quizzes** in each chapter give instant feedback (try one in
+  [chapter 1](00-orientation/01-what-odoo-is.md#quick-check)).
+- **`odoolings`**, a rustlings-style checker, inspects your *actually running* Odoo
+  after each Hands-on section and tells you exactly what's missing:
+
+    ```console
+    $ python odoolings.py check ch09
+    ✔ model libre.vehicle exists
+    ✘ field mileage is Float
+        hint: fields.Float, not fields.Integer — odometers have decimals.
+    ```
+
+- **Progress and streaks** are tracked in the header (stored only in your browser —
+  no account, no tracking).
+
 ## The path
 
 | Tier | Parts | You can... |

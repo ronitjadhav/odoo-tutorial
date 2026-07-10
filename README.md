@@ -12,6 +12,7 @@ learn Odoo myself.
 |---|---|
 | `docs/` | The tutorial (Markdown, built with MkDocs Material) |
 | `code/addons/` | LibreFleet, the capstone module, in its final state |
+| `code/odoolings.py` | rustlings-style CLI that checks your work against each chapter's goals |
 | `code/checkpoints/` | A snapshot of LibreFleet after each chapter |
 | `code/docker-compose.yml` | The Odoo 18 + Postgres 16 dev environment used throughout |
 | `ODOO_TUTORIAL_MASTER_PLAN.md` | The full curriculum and the reasoning behind it |
