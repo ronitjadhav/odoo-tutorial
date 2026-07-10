@@ -8,6 +8,30 @@ the directory list Odoo scans for them.
 
 **addons path** — the ordered list of directories Odoo searches for modules.
 
+**chatter** — the message/activity feed at the bottom (or side) of most form views:
+emails, notes, followers, scheduled activities. Models opt in via `mail.thread`
+(chapter 23).
+
+**demo data** — fictional records (customers, products, orders) a module can load into
+a database *at creation time only*, for training and testing. Production databases are
+created without it.
+
+**developer mode** — a per-session backend mode (`?debug=1` or Settings → General
+Settings) that reveals technical field tooltips and the Settings → Technical menu.
+`debug=assets` additionally serves unminified JS/CSS.
+
+**edition** — Community (open source, LGPL-3) or Enterprise (paid superset with extra
+apps, hosted options and the upgrade service). This tutorial uses Community.
+
+**ERP** — Enterprise Resource Planning: one system, one database for a company's
+operations (sales, stock, accounting...), so every department sees the same facts.
+
+**integrator / partner** — a company implementing Odoo for clients: configuration,
+custom modules, migrations, support. Most Odoo developers work at one.
+
+**kanban view** — the card-per-record, column-per-group view type (e.g. the CRM
+pipeline grouped by stage). One of the standard view types you'll build in chapter 19.
+
 **manifest** — `__manifest__.py`, the dict at a module's root declaring its name,
 version, `depends`, data files, and license. Its presence is what makes a directory a
 module.
@@ -19,11 +43,16 @@ views, data, or code to an Odoo database. An *app* is just a module with
 **OCA** — Odoo Community Association. A Swiss nonprofit hosting hundreds of
 community-maintained module repositories at [github.com/OCA](https://github.com/OCA).
 
+**Odoo SA** — the Belgian company that develops Odoo, ships the yearly release, and
+sells Enterprise subscriptions and hosting (Odoo Online, odoo.sh).
+
 **ORM** — Odoo's object-relational mapper: the layer that turns Python model classes
 into PostgreSQL tables and back.
 
 **OWL** — Odoo Web Library, the in-house JavaScript component framework used by the web
 client since Odoo 14.
+
+**PSC** — Project Steering Committee: the maintainers governing one OCA repository.
 
 **QWeb** — Odoo's XML templating engine, used both server-side (PDF reports, website
 pages) and client-side (OWL component templates).
@@ -31,3 +60,9 @@ pages) and client-side (OWL component templates).
 **recordset** — the value every ORM operation returns: an ordered collection of records
 of one model, which may hold zero, one, or many. Methods called on it apply to all of
 them.
+
+**Runboat** — OCA infrastructure that spins up a throwaway live Odoo instance for every
+pull request, so reviewers can click through changes.
+
+**smart button** — the stat buttons at the top of a form view linking to related
+records ("3 Orders", "2 Deliveries"). You'll build one in chapter 17.

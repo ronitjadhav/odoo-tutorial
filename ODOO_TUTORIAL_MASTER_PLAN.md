@@ -434,7 +434,7 @@ executes every hands-on section personally (that's the learning).
 
 ## 9. Open Questions for the Author (answer before M1)
 1. ~~Monorepo OK, and repo name?~~ **Answered 2026-07-10: monorepo, `odoo-tutorial`.**
-2. Capstone domain sign-off: LibreFleet, or a domain you personally enjoy more?
+2. ~~Capstone domain sign-off~~ **Answered 2026-07-10: LibreFleet confirmed.**
 3. Will your team confirm the Odoo version your projects run? If most client work is
    on 16/17, add a short "working on older versions" appendix.
 4. ~~Public from day 1?~~ **Answered 2026-07-10: public from day 1.**
@@ -442,6 +442,18 @@ executes every hands-on section personally (that's the learning).
 ---
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-10 (later still) — LibreFleet signed off; chapters 1–4 written
+- **Capstone confirmed: LibreFleet** (§9 Q2 closed). Part 2+ can be planned in detail.
+- **M1 started: chapters 1–4 (Part 0 — Orientation) written** per the §4.3 template,
+  each with a 3-question quiz. Added a `<Mermaid>` client component (mermaid npm dep)
+  for the ch3 architecture + request-lifecycle diagrams. Glossary grew to 20 sorted
+  terms. Ch4's hands-on was executed for real on odoo:19 (demo DB `tour`,
+  crm+sale_management installed, 44 demo leads verified via psql; CLI default is
+  --without-demo in 19 — documented as a gotcha).
+- Screenshots for ch4 are deliberately absent until the author does the tour
+  personally (standing rule 4: the author re-executes every hands-on).
+- Next: chapters 5–7 (Part 1 — Environment) to complete M1.
 
 ### 2026-07-10 (later) — baseline bumped to Odoo 19
 - **D1 revised: Odoo 19.0 Community is the baseline** (was 18.0). Verified before
