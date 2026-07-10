@@ -49,7 +49,7 @@ diff their work against a known-good state at any point.
 
 | # | Decision | Choice | Rationale |
 |---|----------|--------|-----------|
-| D1 | Odoo version to teach | **Odoo 18.0 Community** as the baseline, with "What changed in 19" callout boxes | The author's team shared the 18.0 docs; 18 is in the middle of the 3-version support window (17/18/19 as of mid-2026); most client projects at integrators run n-1 or n-2. Odoo 20 arrives ~Oct 2026 — plan a version-bump pass afterwards, don't chase it now. |
+| D1 | Odoo version to teach | ~~Odoo 18.0~~ → **Odoo 19.0 Community** as the baseline, with "On Odoo 18 this differs" callout boxes (revised 2026-07-10, see changelog) | Author's call after reviewing the 18→19 delta: core framework (modules, ORM, views, security, OWL) unchanged; 19 is supported until Oct 2028 vs Oct 2027 for 18, giving the content a longer shelf life. Teaching 19 idioms (`t-out`, `display_name`, `_read_group`) from day one means readers never learn deprecated forms — and those exact deprecations become ch37's 18→19 migration exercise. Version-bump pass after each October release stays planned. |
 | D2 | Edition | **Community (open source)** | Enterprise source is not freely redistributable; Community is what OCA targets; everything learned transfers. Mention Enterprise-only features in info boxes. |
 | D3 | Site generator | ~~MkDocs + Material~~ → **Next.js + Fumadocs + Tailwind (shadcn aesthetic)**, static-exported (revised 2026-07-10, see changelog) | The author wants an interactive, product-feel learning platform, not a docs site. Fumadocs provides docs plumbing (search, sidebar, MDX, dark mode) out of the box; custom React components add quizzes, progress/streaks, and the landing page. Static export keeps GitHub Pages hosting free. |
 | D4 | Hosting | **GitHub Pages** via GitHub Actions on push to `main` | Free, zero-ops, requested by the author. |
@@ -442,6 +442,23 @@ executes every hands-on section personally (that's the learning).
 ---
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-10 (later) — baseline bumped to Odoo 19
+- **D1 revised: Odoo 19.0 Community is the baseline** (was 18.0). Verified before
+  switching: 18→19 dev-facing changes are deprecations/idioms
+  (`read_group`→`_read_group`/`formatted_read_group`, `display_name` over `name_get()`,
+  `t-out` over `t-esc`, `odoo.osv` retired, Python 3.12 recommended) — the fundamentals
+  the tutorial teaches are identical. Callout convention flips to
+  `"On Odoo 18 this differs"` for readers on older client projects.
+- Applied: `code/docker-compose.yml` → `odoo:19` (verified: compose up, DB init, app
+  install, odoolings green), odoolings version check → 19.x, all site/README text,
+  doc links → `/documentation/19.0/`.
+- **ch37 (Migrations) gains an interactive migration-checklist component** (author's
+  idea: trackable checkboxes for the migration procedure). Build it when writing ch37,
+  not before. The 18→19 deprecation list above is ch37's exercise material.
+- Standing policy confirmed by author: re-verify the baseline each October when a new
+  major ships (Odoo 20 ~Oct 2026 → schedule the delta/bump pass then). Note: Odoo has
+  no LTS — one major per year, last three supported.
 
 ### 2026-07-10 — M0 shipped, then rebuilt as an interactive platform
 - **M0 done** on the original MkDocs stack: monorepo `ronitjadhav/odoo-tutorial`

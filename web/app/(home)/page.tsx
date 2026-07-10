@@ -58,7 +58,7 @@ export default function HomePage() {
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,var(--color-fd-primary),transparent_70%)] opacity-15"
         />
         <p className="mx-auto mb-6 w-fit rounded-full border px-3 py-1 text-xs font-medium text-fd-muted-foreground">
-          Free & open source · Odoo 18 Community
+          Free & open source · Odoo 19 Community
         </p>
         <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
           Zero to{' '}

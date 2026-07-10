@@ -1,6 +1,6 @@
 # Zero to Odoo Expert
 
-A hands-on Odoo 18 development tutorial, taking a Python developer from zero Odoo
+A hands-on Odoo 19 development tutorial, taking a Python developer from zero Odoo
 knowledge to OCA-quality contributions. Built in the open, chapter by chapter, while I
 learn Odoo myself.
 
@@ -14,7 +14,7 @@ learn Odoo myself.
 | `code/addons/` | LibreFleet, the capstone module, in its final state |
 | `code/odoolings.py` | rustlings-style CLI that checks your work against each chapter's goals |
 | `code/checkpoints/` | A snapshot of LibreFleet after each chapter |
-| `code/docker-compose.yml` | The Odoo 18 + Postgres 16 dev environment used throughout |
+| `code/docker-compose.yml` | The Odoo 19 + Postgres 16 dev environment used throughout |
 | `ODOO_TUTORIAL_MASTER_PLAN.md` | The full curriculum and the reasoning behind it |
 
 ## Run the dev environment

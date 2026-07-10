@@ -42,9 +42,9 @@ def server_up(env):
     env.version_info = env.common.version()
 
 
-def server_is_18(env):
+def server_is_19(env):
     v = env.common.version()["server_version"]
-    assert v.startswith("18"), "server reports version %s, tutorial targets 18.x" % v
+    assert v.startswith("19"), "server reports version %s, tutorial targets 19.x" % v
 
 
 def can_login(env):
@@ -56,8 +56,8 @@ CHAPTERS = {
     "ch05": [
         ("Odoo server is reachable", server_up,
          "Is the dev environment running? From code/: docker compose up"),
-        ("server version is 18.x", server_is_18,
-         "The tutorial targets Odoo 18. Check the image tag in docker-compose.yml (image: odoo:18)."),
+        ("server version is 19.x", server_is_19,
+         "The tutorial targets Odoo 19. Check the image tag in docker-compose.yml (image: odoo:19)."),
         ("can log in as admin", can_login,
          "Create a database (default name: tutorial) at http://localhost:8069 with admin/admin, "
          "or pass --db/--user/--password for yours."),
