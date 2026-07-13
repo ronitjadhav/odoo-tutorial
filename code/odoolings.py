@@ -51,6 +51,11 @@ def can_login(env):
     env.login()
 
 
+def shell_partner_exists(env):
+    ids = env.call("res.partner", "search", [("name", "=", "Ada Lovelace")])
+    assert ids, "no res.partner named 'Ada Lovelace' in the database"
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -62,7 +67,15 @@ CHAPTERS = {
          "Create a database (default name: tutorial) at http://localhost:8069 with admin/admin, "
          "or pass --db/--user/--password for yours."),
     ],
-    # Chapters 8+ add checks as they are written, e.g. "model libre.vehicle
+    "ch06": [
+        ("can log in as admin", can_login,
+         "Is the dev environment running with the tutorial database? See ch05."),
+        ("the partner created from odoo shell exists", shell_partner_exists,
+         "In the ch06 hands-on you create a contact named 'Ada Lovelace' from "
+         "odoo shell. Did you run env.cr.commit() before quitting? Without it, "
+         "shell writes are rolled back."),
+    ],
+    # Chapters 8+ add checks as they are written, e.g. "model librefleet.vehicle
     # exists", "field mileage is Float" — via env.call('ir.model', ...) and
     # fields_get().
 }
@@ -84,7 +97,7 @@ def cmd_check(env, chapter):
             print("    hint: %s" % hint)
             return 1
         print("✔ %s" % desc)
-    print("\n%s complete — on to the next chapter! 🔧" % chapter)
+    print("\n%s complete! On to the next chapter 🔧" % chapter)
     return 0
 
 
