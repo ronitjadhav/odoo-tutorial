@@ -56,6 +56,28 @@ def shell_partner_exists(env):
     assert ids, "no res.partner named 'Ada Lovelace' in the database"
 
 
+def _librefleet_module(env):
+    mods = env.call("ir.module.module", "search_read",
+                    [("name", "=", "librefleet")],
+                    fields=["state", "latest_version", "application"])
+    assert mods, "no module named 'librefleet' known to this database"
+    return mods[0]
+
+
+def librefleet_installed(env):
+    state = _librefleet_module(env)["state"]
+    assert state == "installed", "module state is %r, not 'installed'" % state
+
+
+def librefleet_version_ok(env):
+    v = _librefleet_module(env)["latest_version"] or ""
+    assert v.startswith("19.0."), "installed version is %r, expected 19.0.x.y.z" % v
+
+
+def librefleet_is_app(env):
+    assert _librefleet_module(env)["application"], "'application' is not True in the manifest"
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -75,7 +97,19 @@ CHAPTERS = {
          "odoo shell. Did you run env.cr.commit() before quitting? Without it, "
          "shell writes are rolled back."),
     ],
-    # Chapters 8+ add checks as they are written, e.g. "model librefleet.vehicle
+    "ch08": [
+        ("module librefleet is installed", librefleet_installed,
+         "Is code/addons/librefleet in place with __manifest__.py and __init__.py? "
+         "Install it: docker compose exec odoo odoo -c /etc/odoo/odoo.conf "
+         "-d tutorial -i librefleet --stop-after-init"),
+        ("manifest version is 19.0.x.y.z", librefleet_version_ok,
+         "Set \"version\": \"19.0.1.0.0\" in __manifest__.py (Odoo major first, "
+         "then your module's own version), then upgrade with -u librefleet."),
+        ("LibreFleet is an app", librefleet_is_app,
+         "Set \"application\": True in __manifest__.py and upgrade, so LibreFleet "
+         "appears on the Apps home screen."),
+    ],
+    # Chapters 9+ add checks as they are written, e.g. "model librefleet.vehicle
     # exists", "field mileage is Float" — via env.call('ir.model', ...) and
     # fields_get().
 }
