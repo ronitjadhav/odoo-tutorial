@@ -466,7 +466,7 @@ executes every hands-on section personally (that's the learning).
   understands the ecosystem map, verified by the author actually doing it.
 
 ### M2 — Part 2 (weeks 2–3) — the heart of the tutorial
-- [ ] **Gate: author signs off on the §5.5 LibreFleet blueprint.**
+- [x] **Gate: author signs off on the §5.5 LibreFleet blueprint** (2026-07-13).
 - [ ] Chapters 8–15 with checkpoints `ch08`–`ch15` committed and installable, each
       registering odoolings checks; exercises graded per §5.6; break-it labs where
       instructive.
@@ -560,12 +560,23 @@ executes every hands-on section personally (that's the learning).
 3. Will your team confirm the Odoo version your projects run? If most client work is
    on 16/17, add a short "working on older versions" appendix.
 4. ~~Public from day 1?~~ **Answered 2026-07-10: public from day 1.**
-5. Sign off on the §5.5 LibreFleet blueprint (models/fields/security). Gate for M2 —
-   added 2026-07-13.
+5. ~~Sign off on the §5.5 LibreFleet blueprint (models/fields/security)?~~
+   **Answered 2026-07-13: approved as written. M2 unblocked.**
 
 ---
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-13 (evening) — blueprint signed off; M2 started with ch08
+- **§5.5 LibreFleet blueprint approved by the author (§9 Q5 closed). M2 unblocked.**
+- **Ch08 written and executed for real**: `code/addons/librefleet/` created
+  (manifest, empty `__init__.py`, generated icon), installed and upgraded via CLI
+  against the `tutorial` db, version bump observed in `ir_module_module`, break-it
+  lab captured live (syntax-broken manifest → the cryptic "inconsistent states"
+  error). Checkpoint `code/checkpoints/ch08/` committed. odoolings `ch08` checks
+  added (installed / version format / application flag), verified red then green.
+- Roadmap: M2 🚧. Glossary: +technical name. (Sidebar checkmarks shipped separately
+  on PR #2, closing M1.)
 
 ### 2026-07-13 (later) — M1 chapters complete; content style pass
 - **Chapters 5–7 written (Part 1 — Environment), M1 content done.** Every command
