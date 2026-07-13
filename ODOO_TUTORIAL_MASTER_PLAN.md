@@ -454,14 +454,15 @@ executes every hands-on section personally (that's the learning).
       (fresh clone → `docker compose up` → login → install an app).
 - **Acceptance:** live site with skeleton; `docker compose up` works on a clean machine.
 
-### M1 — Part 0 + Part 1 (week 1) — ✅ chapters done 2026-07-13; checkmarks pending
+### M1 — Part 0 + Part 1 (week 1) — ✅ done 2026-07-13
 - [x] Chapters 1–4 following the §4.3 template (quizzes included; ch4 hands-on
       executed for real on odoo:19).
 - [x] Chapters 5–7 written 2026-07-13, hands-on executed for real (ch05/ch06
       odoolings checks green; OCA clone measurements in ch7 are live data).
 - [x] Original diagrams (mermaid) for architecture & request lifecycle.
 - [x] Glossary started (every jargon term used gets an entry the day it appears).
-- [ ] Sidebar completion checkmarks (§4.4) as M1 wrap-up.
+- [x] Sidebar completion checkmarks (§4.4) as M1 wrap-up (done 2026-07-13:
+      `ChapterItem` sidebar override reading the existing localStorage progress).
 - **Acceptance:** a Python dev with no Odoo background gets a running dev env and
   understands the ecosystem map, verified by the author actually doing it.
 
@@ -566,6 +567,14 @@ executes every hands-on section personally (that's the learning).
 ---
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-13 (evening) — M1 fully done: sidebar completion checkmarks shipped
+- `web/components/chapter-item.tsx`: sidebar `Item` override (Fumadocs
+  `sidebar.components` slot) showing a green check next to chapters marked
+  complete, driven by the same localStorage progress store as the pill. Wired in
+  `app/docs/layout.tsx`. Build + type check green. **M1 closed.**
+- Next milestone is M2 (ch8–15); its gate remains author sign-off on the §5.5
+  blueprint (§9 Q5).
 
 ### 2026-07-13 (later) — M1 chapters complete; content style pass
 - **Chapters 5–7 written (Part 1 — Environment), M1 content done.** Every command
