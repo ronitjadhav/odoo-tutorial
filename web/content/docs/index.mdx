@@ -5,13 +5,13 @@ description: What Zero to Odoo Expert is, who it's for, and how to get the most 
 
 This tutorial takes a competent Python developer with **zero Odoo knowledge** to the
 point of contributing OCA-quality modules. It is not a rewrite of the
-[official Odoo docs](https://www.odoo.com/documentation/19.0/) — it links to them
+[official Odoo docs](https://www.odoo.com/documentation/19.0/). It links to them
 generously and adds what they leave out: sequencing, the *why*, the pitfalls, and the
 practices real Odoo integrators use every day.
 
 ## Built for practice, not reading
 
-You build one project — **LibreFleet**, a vehicle-workshop and service-booking app —
+You build one project, **LibreFleet**, a vehicle-workshop and service-booking app,
 across 40 chapters. Along the way:
 
 - **Quizzes** give instant feedback right in the page (try one in
@@ -21,18 +21,19 @@ across 40 chapters. Along the way:
 
   ```console
   $ python odoolings.py check ch09
-  ✔ model libre.vehicle exists
+  ✔ model librefleet.vehicle exists
   ✘ field mileage is Float
-      hint: fields.Float, not fields.Integer — odometers have decimals.
+      hint: fields.Float, not fields.Integer. Odometers have decimals.
   ```
 
-- **Checkpoints** — every chapter's final state lives in
+- **Checkpoints**: every chapter's final state lives in
   [`code/checkpoints/`](https://github.com/ronitjadhav/odoo-tutorial/tree/main/code/checkpoints),
   so you can diff your work against a known-good state whenever you're stuck.
-- **Progress and streaks** live in the pill at the bottom-right — stored only in your
-  browser, no account needed.
+- **Progress and streaks** live in the pill at the bottom-right, stored only in your
+  browser. No account needed.
 
-Everything targets **Odoo 19.0 Community** in Docker. Chapters flag where Odoo 18 differs, for readers on client projects running older versions.
+Everything targets **Odoo 19.0 Community** in Docker. Chapters flag where Odoo 18
+differs, for readers on client projects running older versions.
 
 ## The path
 

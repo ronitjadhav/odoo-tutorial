@@ -1,15 +1,15 @@
 ---
 title: "4. Guided Tour as a User"
-description: Run Odoo with demo data and click through it — you can't develop a product you've never used.
+description: Run Odoo with demo data and click through it; you can't develop a product you've never used.
 ---
 
 **Goal:** spend an hour inside Odoo as a user, then switch on developer mode and peek
-behind the curtain. · **Time:** ~1.5 h · **Checkpoint:** none — but your Odoo runs!
+behind the curtain. · **Time:** ~1.5 h · **Checkpoint:** none, but your Odoo runs!
 
 ## Why this matters
 
 You cannot develop a product you've never used. Every model you'll build in Part 2
-(customers, orders, stages, activities) is a concept Odoo's own apps already express —
+(customers, orders, stages, activities) is a concept Odoo's own apps already express,
 and once you've clicked through them, the framework's vocabulary stops being abstract.
 Developers who skip this stage write modules that fight the platform; developers who
 know the product write modules that feel native.
@@ -30,41 +30,41 @@ $ docker compose up
 Wait for the log to settle, then open [http://localhost:8069](http://localhost:8069).
 You'll land on the **database manager**.
 
-### 2. Create a database — with demo data
+### 2. Create a database, with demo data
 
 Fill the form: master password `admin`, database name `tour`, pick your email/password
-for the admin user, and — **important** — check **Demo data**. Demo data fills the
+for the admin user, and (**important**) check **Demo data**. Demo data fills the
 database with a fictional company (customers, products, open orders), which is exactly
 what makes clicking around instructive.
 
 <Callout type="warn" title="Demo data is a birth decision">
-  A database gets demo data at creation or never — there's no switch to flip later.
+  A database gets demo data at creation or never; there's no switch to flip later.
   If you forgot the checkbox, drop the database in the manager and create it again.
   (From the command line, Odoo 19 creates databases **without** demo unless you pass
-  `--with-demo` — a default that changed over the years, so old tutorials disagree.)
+  `--with-demo`. That default changed over the years, so old tutorials disagree.)
 </Callout>
 
 ### 3. Install two apps
 
 You land in the **Apps** menu. Install **CRM**, then **Sales**. Watch what happens to
-the top-left menu after each install — entire sections of the product appear. That's
-the modularity from chapter 3, live: each install loaded a module's models, views and
+the top-left menu after each install: entire sections of the product appear. That's
+the modularity from chapter 3, live. Each install loaded a module's models, views and
 menus into *this* database.
 
 ### 4. Be a salesperson for 20 minutes
 
-No checklist pressure — the goal is exposure, not mastery:
+No checklist pressure. The goal is exposure, not mastery:
 
 - **CRM → My Pipeline.** This is a *kanban view* grouped by stage. Drag an opportunity
   to another column. Open one: the trail of messages and events at the bottom
-  is the **chatter** — you'll add it to your own models in chapter 23.
+  is the **chatter**, which you'll add to your own models in chapter 23.
 - Create a new opportunity, schedule an activity on it, mark it won.
 - **Sales → Orders → Quotations.** Open one, note the workflow buttons (Send, Confirm)
-  and the status bar — states and state-driven buttons are chapter 17 material.
+  and the status bar. States and state-driven buttons are chapter 17 material.
 - Create a quotation for any demo customer, add products, confirm it, and notice the
   smart buttons that appear linking to related documents.
-- Explore **Settings → Users & Companies → Users**: access rights grouped by app —
-  that's the security model of chapter 10 seen from the admin side.
+- Explore **Settings → Users & Companies → Users**: access rights grouped by app.
+  That's the security model of chapter 10 seen from the admin side.
 
 ### 5. Switch on developer mode
 
@@ -74,8 +74,8 @@ append `?debug=1` to any backend URL.)
 
 Three things just changed:
 
-- A 🐞 icon appeared in the top bar — the developer tools menu.
-- **Settings** grew a **Technical** section — the database's guts: views, actions,
+- A 🐞 icon appeared in the top bar: the developer tools menu.
+- **Settings** grew a **Technical** section, the database's guts: views, actions,
   models, scheduled jobs, all browsable as ordinary records.
 - Form fields now reveal their internals: open any customer, hover a field, and the
   tooltip shows its technical name (`phone`, `user_id`), its type, and which module
@@ -101,19 +101,19 @@ $ docker compose exec db psql -U odoo -d tour -c "select count(*) from crm_lead;
 ```
 
 Dozens of demo opportunities plus the ones you created (the demo set gave us 44 on a
-fresh install — your exact number will differ). If the count is near zero, the demo
-checkbox was missed — recreate the database.
+fresh install; your exact number will differ). If the count is near zero, the demo
+checkbox was missed. Recreate the database.
 
 ## Gotchas
 
 - **Developer mode is per session, not per server.** It follows your login session;
   activating it doesn't affect other users, and `?debug=0` turns it off.
-- **`debug=assets` exists too.** It serves unminified JS/CSS — you'll want it in
+- **`debug=assets` exists too.** It serves unminified JS/CSS. You'll want it in
   Part 5 when debugging OWL; it makes everything slower, so don't leave it on.
 - **Demo data is not sample data for production.** It exists for training, tests, and
   Runboat-style throwaway instances. Client projects always start without it.
 - **Don't study Enterprise-only apps yet.** If you see apps in the list that ask for a
-  subscription code (Studio, some Accounting features), skip them — everything in this
+  subscription code (Studio, some Accounting features), skip them. Everything in this
   tutorial runs on Community.
 
 ## Quick check
@@ -121,27 +121,27 @@ checkbox was missed — recreate the database.
 <Quiz
   questions={[
     {
-      q: 'You created a database but forgot demo data. To get it, you…',
+      q: 'You created a database but forgot demo data. To get it, you...',
       options: [
         'toggle it in Settings → Technical',
         'drop and recreate the database with the checkbox on',
         'run the demo-data wizard from Apps',
       ],
       answer: 1,
-      why: "Demo data is loaded at database creation only. There's no later toggle — recreating is the fix (cheap now, impossible in production, which is the point).",
+      why: "Demo data is loaded at database creation only. There's no later toggle; recreating is the fix (cheap now, impossible in production, which is the point).",
     },
     {
-      q: "Developer mode's most useful superpower for a beginner is…",
+      q: "Developer mode's most useful superpower for a beginner is...",
       options: [
         'it disables access rights so everything is editable',
         'field tooltips + the Technical menu expose the data behind every screen',
         'it makes the server reload code automatically',
       ],
       answer: 1,
-      why: 'Hover any field for its technical name; browse views/models/actions as records under Settings → Technical. (It never bypasses security, and auto-reload is a server flag — chapter 6.)',
+      why: 'Hover any field for its technical name; browse views/models/actions as records under Settings → Technical. (It never bypasses security, and auto-reload is a server flag, see chapter 6.)',
     },
     {
-      q: 'Installing the CRM app changed the main menu because…',
+      q: 'Installing the CRM app changed the main menu because...',
       options: [
         'the web client downloaded a new frontend build',
         'the module loaded its menus, views and models into this database',
@@ -155,15 +155,15 @@ checkbox was missed — recreate the database.
 
 ## Exercises
 
-1. Install **Inventory** and trace what your confirmed sales order created there
+1. ⭐ Install **Inventory** and trace what your confirmed sales order created there
    (hint: the smart button on the order).
-2. With developer mode on, find which module defined the `expected_revenue` field on
-   `crm.lead` — using only the UI.
-3. In the Technical menu, find the *form view* of `crm.lead` and skim its XML in the
+2. ⭐⭐ With developer mode on, find which module defined the `expected_revenue` field on
+   `crm.lead`, using only the UI.
+3. ⭐⭐ In the Technical menu, find the *form view* of `crm.lead` and skim its XML in the
    Architecture tab. You already recognize more of it than you'd expect after
    chapter 3.
 
 ## Further reading
 
-- [Developer mode — official docs](https://www.odoo.com/documentation/19.0/applications/general/developer_mode.html)
-- [CRM app docs](https://www.odoo.com/documentation/19.0/applications/sales/crm.html) — functional docs exist for every app; skim, don't study.
+- [Developer mode, official docs](https://www.odoo.com/documentation/19.0/applications/general/developer_mode.html)
+- [CRM app docs](https://www.odoo.com/documentation/19.0/applications/sales/crm.html): functional docs exist for every app. Skim, don't study.
