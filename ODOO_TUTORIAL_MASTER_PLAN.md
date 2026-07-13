@@ -74,7 +74,7 @@ version-sensitive before writing the corresponding chapter.
   ships, 17 drops off). This is why integrators live and breathe **migrations** —
   a whole chapter of the tutorial is dedicated to this.
 - Docs live at `https://www.odoo.com/documentation/<version>/` — always link
-  version-pinned URLs (18.0), never `/master/`.
+  version-pinned URLs (19.0, the tutorial baseline), never `/master/`.
 
 ### 3.2 Architecture fundamentals (chapter source material)
 - Three-tier: presentation (HTML5/JS/CSS + the **OWL** framework), logic (Python),
@@ -141,67 +141,100 @@ version-sensitive before writing the corresponding chapter.
 ---
 ## 4. Website & Repository Design
 
-### 4.1 Monorepo structure
+### 4.1 Monorepo structure (as built — post-D3 revision)
 
 ```
 odoo-tutorial/                      # public GitHub repo
-├── mkdocs.yml                      # site config (Material theme)
-├── docs/                           # all tutorial content (Markdown)
-│   ├── index.md                    # landing page: what/why/how to use
-│   ├── 00-orientation/             # Part 0
-│   ├── 01-environment/             # Part 1  (one folder per part, one .md per chapter)
-│   ├── 02-first-module/
-│   ├── ...
-│   ├── assets/                     # screenshots, diagrams (original only)
-│   └── glossary.md                 # Odoo jargon: addon, manifest, recordset, sudo, ...
+├── ODOO_TUTORIAL_MASTER_PLAN.md    # this file — single source of truth + changelog
+├── web/                            # Next.js 16 + Fumadocs + Tailwind 4, static export
+│   ├── content/docs/               # all tutorial content (MDX)
+│   │   ├── index.mdx               # docs landing: what/why/how to use
+│   │   ├── roadmap.mdx             # milestone status table (keep in sync with §6)
+│   │   ├── glossary.mdx            # Odoo jargon: addon, manifest, recordset, sudo, ...
+│   │   ├── 00-orientation/         # one folder per part, one NN-slug.mdx per chapter,
+│   │   ├── 01-environment/         #   nav order in each folder's meta.json
+│   │   └── ...
+│   ├── components/                 # quiz.tsx, mermaid.tsx, progress-pill.tsx,
+│   │                               #   mark-complete.tsx, search.tsx (see §4.4)
+│   └── app/, lib/, ...             # Fumadocs plumbing; basePath /odoo-tutorial
 ├── code/
 │   ├── addons/
-│   │   └── <capstone_module>/      # final state of the capstone module(s)
+│   │   └── librefleet/             # final state of the capstone module(s)
 │   ├── checkpoints/
-│   │   ├── ch03/ ch04/ ...         # snapshot of the addon after each chapter
-│   ├── docker-compose.yml          # the exact dev env the tutorial uses
-│   ├── .pre-commit-config.yaml     # OCA-style hooks, used from Part 6 onward
-│   └── requirements-dev.txt
-├── .github/workflows/
-│   ├── deploy-pages.yml            # mkdocs gh-deploy on push to main
-│   └── ci.yml                      # lint + run Odoo tests for code/addons (later milestone)
+│   │   └── ch08/ ch09/ ...         # snapshot of the addon after each chapter
+│   ├── odoolings.py                # XML-RPC work checker (see §4.4), stdlib only
+│   ├── docker-compose.yml          # odoo:19 + postgres:16 — the exact dev env taught
+│   ├── odoo.conf
+│   ├── .pre-commit-config.yaml     # OCA-style hooks, added in Part 6
+│   └── requirements-dev.txt        # added when first needed, not before
+├── .github/workflows/              # deploy Pages on push; ci.yml for module tests (M3)
 ├── LICENSE-content (CC BY-SA 4.0), LICENSE-code (AGPL-3)
-├── CONTRIBUTING.md                 # how readers can file issues/PRs
+├── CONTRIBUTING.md
 └── README.md
 ```
 
-### 4.2 Site features to configure (Material for MkDocs)
-- Navigation: parts as top-level sections, chapters as pages; "prev/next" footer nav.
-- Code blocks with copy button, line highlights, and **annotations** for explaining
-  specific lines.
-- Admonition boxes with consistent semantics used throughout:
-  - `!!! note "Official docs"` → link to the canonical doc page for the topic
-  - `!!! warning "Gotcha"` → real-world pitfalls
-  - `!!! tip "In the field"` → integrator/OCA practice notes
-  - `!!! info "Odoo 19 changed this"` → version deltas
-  - `!!! example "Exercise"` → hands-on tasks with a link to the checkpoint solution
-- Per-chapter footer template: *Prerequisites · What you built · Official reading ·
-  OCA modules worth studying for this topic · Exercise checklist.*
-- Search (built-in), dark mode, mermaid diagrams enabled for architecture drawings.
+### 4.2 Site conventions (Next.js + Fumadocs)
+- Navigation: parts as sidebar sections, chapters as pages; prev/next footer nav,
+  Orama static search, dark mode — all from Fumadocs.
+- Code blocks with copy button and line highlights (Shiki via Fumadocs MDX).
+- Callout boxes with consistent semantics used throughout (Fumadocs `<Callout>`):
+  - `type="info"  title="Official docs"` → link to the canonical doc page for the topic
+  - `type="warn"  title="Gotcha"` → real-world pitfalls
+  - `type="info"  title="In the field"` → integrator/OCA/Camptocamp practice notes
+  - `type="info"  title="On Odoo 18 this differs"` → version deltas for older projects
+- Diagrams: the `<Mermaid>` client component (architecture, request lifecycle, ERDs).
+- Per-chapter footer: *Prerequisites · What you built · Official reading ·
+  OCA modules worth studying · Exercise checklist.*
 
 ### 4.3 Chapter template (every chapter MUST follow this skeleton)
 
 ```markdown
-# NN. Chapter Title
+# NN. Chapter Title            <- frontmatter: title + description
 **Goal:** one sentence. **Time:** ~X h. **Checkpoint:** code/checkpoints/chNN
 
 ## Why this matters            <- motivation, real-world framing
 ## Concepts                    <- original explanation, diagrams, links to official docs
 ## Hands-on                    <- numbered steps on the capstone project
-## Verify                      <- how to prove it works (UI steps, shell commands, tests)
+## Verify                      <- prove it works: UI steps, odoo-bin shell/psql, and
+                                  `python odoolings.py check chNN` where checks exist
 ## Gotchas                     <- pitfalls collected while writing/testing the chapter
-## Exercises                   <- 2–4 tasks WITHOUT step-by-step solutions inline
+## Quick check                 <- <Quiz> with 3–5 questions, each with a `why`
+## Exercises                   <- graded ⭐/⭐⭐/⭐⭐⭐ tasks (see §5.6), no inline solutions
 ## Further reading             <- official docs + OCA examples + (optional) videos
 ```
 
-**Authoring rule for the agent:** every "Hands-on" section must be *executed and
-verified* in the Docker environment before the chapter is marked done. No untested
-code ships. Screenshots are taken from the author's own running instance.
+**Authoring rules for the agent:**
+1. Every "Hands-on" section must be *executed and verified* in the Docker environment
+   before the chapter is marked done. No untested code ships. Screenshots are taken
+   from the author's own running instance.
+2. Every chapter that changes the capstone module must register odoolings checks for
+   its end state, and its Verify section must reference them. Quizzes must test the
+   chapter's *ideas* (predict behavior, choose the right approach), not recall of
+   syntax that the reader can look up.
+
+### 4.4 Interactive mechanics — inventory & roadmap
+
+Built (keep polishing, don't rebuild):
+- **`<Quiz>`** — per-chapter multiple choice, instant feedback with explanations.
+- **`odoolings.py`** — rustlings-style CLI verifying the reader's *running* Odoo over
+  XML-RPC, with hints on failure. Chapter checks (`ch05`…) plus, from Part 2 on,
+  boss-challenge check sets (`boss2`…, see §5.6).
+- **Progress + streaks** — localStorage pill; per-chapter "mark complete". No
+  accounts/backend by design; revisit only if a real learner community shows up.
+- **`<Mermaid>`** — diagrams as code.
+
+Planned (build at the milestone that needs them, not before):
+- **Sidebar completion checkmarks** driven by the same localStorage state (small; do
+  during M1 wrap-up so Part 2 readers see their trail).
+- **Quiz persistence + per-part mastery** — remember quiz results, show a "Part N
+  mastery" bar; feeds the end-of-part review quiz (§5.6). M2.
+- **`<Term>` glossary tooltips** — inline hover definitions linking to the glossary,
+  so jargon is explained where it occurs. M2, then backfill.
+- **Predict-the-output quizzes** — a `code` field on quiz questions rendering a
+  snippet above the options ("what does this recordset expression return?"). Extends
+  `<Quiz>`, not a new component. M2 (recordsets chapter is the natural debut).
+- **ch37 interactive migration checklist** — trackable checkboxes for the OCA
+  migration procedure. Build when writing ch37.
 
 ---
 
@@ -245,7 +278,7 @@ matrix; get the author's sign-off before writing Part 2.)
    30 minutes, enable developer mode — you must know the product to develop it.
 
 **Part 1 — Environment**
-5. Dev setup with Docker Compose: Odoo 18 + Postgres 16, volumes for addons and
+5. Dev setup with Docker Compose: Odoo 19 + Postgres 16, volumes for addons and
    filestore, config file, first login. Appendix: native install from source.
 6. Daily driver workflow: `odoo-bin` flags that matter, `--dev=all`, log reading,
    database create/drop/duplicate, `psql` basics, VS Code setup (Python + XML
@@ -311,8 +344,9 @@ matrix; get the author's sign-off before writing Part 2.)
     the capstone-of-the-capstone.
 
 **Part 7 — Integrator craft**
-37. Migrations: why yearly releases force them, migrating a module 17→18 (manifest,
-    views, API changes), OCA migration process & preserving git history, OpenUpgrade
+37. Migrations: why yearly releases force them, migrating a module 18→19 (manifest,
+    views, API changes — the deprecation list from the D1 revision is the exercise
+    material), OCA migration process & preserving git history, OpenUpgrade
     for database migrations, Enterprise upgrade service (concept level).
 38. Performance: read the ORM's SQL, N+1 patterns, `read_group`, batch `create`,
     indexes, `prefetch`, profiling; when to drop to SQL (and the rules for doing so).
@@ -331,54 +365,137 @@ server actions ▢ QWeb reports ▢ controllers ▢ portal ▢ OWL component ▢
 assets ▢ tests (unit + tour) ▢ data files/noupdate ▢ i18n basics ▢ pre-commit/OCA
 conventions ▢ migration exercise ▢ performance patterns ▢ deployment concepts ▢
 
----
+### 5.5 LibreFleet blueprint (data model & feature map — added 2026-07-13)
 
-## 6. Execution Roadmap for the Building Agent
+The schema below is fixed *before* M2 so chapters build one coherent module instead of
+inventing fields as they go. Module name **`librefleet`** — deliberately not `fleet`,
+because core Odoo ships a `fleet` module (that collision is itself a ch8 teaching
+point). Models use the `librefleet.` prefix. **Author sign-off on this blueprint is
+the gate for starting M2** (like the capstone-domain sign-off was for Part 2 planning).
+
+Models, with the chapter that introduces each piece:
+
+- **`librefleet.vehicle`** (ch9) — the reader's first model. `license_plate` (Char,
+  required), `vin` (Char), `model_name` (Char), `year` (Integer), `mileage_km`
+  (Float), `notes` (Text), `active` (Boolean — archiving). ch12 adds `owner_id`
+  (many2one → `res.partner`) and `service_order_ids` (one2many). ch13 adds
+  `service_count` (computed, statbutton). ch14 adds a SQL unique constraint on
+  `license_plate` and a Python constraint on `year`.
+- **`librefleet.service.type`** (ch11) — deliberately tiny config model (`name`,
+  `flat_fee`, `default_duration_h`) so the first menus/actions/views chapter works on
+  something with no relations yet.
+- **`librefleet.service.order`** (ch12) — the centerpiece. `reference` (Char, from
+  `ir.sequence`, ch14), `vehicle_id` (many2one), `customer_id` (related to
+  `vehicle_id.owner_id`, stored — ch13), `service_type_id` (many2one),
+  `technician_ids` (many2many → `res.users`), `line_ids` (one2many), `stage`
+  (Selection: draft → confirmed → in_progress → done/cancelled; statusbar ch17,
+  kanban pipeline ch19), `scheduled_start`/`scheduled_end` (Datetime; the
+  no-overlapping-bookings-per-vehicle constraint, ch14), `parts_total` / `labor_total`
+  / `margin` (computed with `@api.depends`, ch13). Later: chatter (ch23), approve &
+  invoice wizard (ch20), QWeb PDF report (ch26), portal view (ch27), maintenance-
+  reminder cron (ch25), OWL jobs-per-technician dashboard (ch31).
+- **`librefleet.part`** (ch12) — `name`, `code`, `standard_cost`, `list_price`.
+  Self-contained on purpose: no dependency on `product`/`sale` in Tier 1. Bridging to
+  real product/invoice flows is exactly what ch22 (extending core apps) then teaches.
+- **`librefleet.service.order.line`** (ch12/13) — `order_id`, `part_id`, `qty`,
+  `price_unit` (default from part), `subtotal` (computed).
+
+Security (ch10): two groups — *Workshop / User* (technicians: read all, write orders
+assigned to them via record rule) and *Workshop / Manager* (full CRUD + config
+models). The record rule lands in ch10 and is *felt* throughout Part 2–3.
+
+Part 6 extraction candidate (ch36): the maintenance-reminder feature becomes a
+standalone OCA-quality `librefleet_maintenance_reminder` module.
+
+### 5.6 Challenge design (added 2026-07-13 — makes the tutorial *hard* in the right places)
+
+Three exercise grades, used in every chapter's Exercises section:
+- **⭐ Apply** — same pattern, new target ("add a `color` field to vehicles and show
+  it in the list"). Confidence reps.
+- **⭐⭐ Transfer** — combine this chapter with earlier ones, no steps given ("managers
+  see cancelled orders, technicians don't — no view duplication allowed").
+- **⭐⭐⭐ Stretch** — requires reading official docs/OCA source beyond the chapter;
+  flagged as optional so beginners don't stall.
+
+**Boss challenges** close each part from Part 2 on — a one-page *spec* (no steps) for
+a small feature or mini-module built from memory, verified by an odoolings check set:
+- **Part 2 boss (`boss2`):** build a tiny "garage inventory" module (one model,
+  security, menu, list+form, one computed field, one constraint) from a spec, without
+  looking back at chapters. This replaces the vague "rebuild from memory" self-test
+  with something *checkable*.
+- **Part 3 boss (`boss3`):** full view suite (search defaults, kanban with grouping,
+  a wizard) for a provided model spec.
+- **Part 4 boss (`boss4`):** extend a core app per spec (field on `res.partner` +
+  automated activity + a test that proves it).
+- **Part 5 boss (`boss5`):** a small OWL component against a documented RPC shape.
+Boss specs live on the site; solutions live in `code/checkpoints/bossN/`.
+
+**Break-it labs** — one per chapter where instructive: deliberately cause the failure
+the chapter protects against (delete the ACL line and upgrade; make two fields depend
+on each other; drop a required field from a form view), read the actual
+traceback/log, then fix it. Debugging literacy is the #1 skill gap of new Odoo devs
+and no existing tutorial teaches it systematically — this is our differentiator.
+
+**End-of-part review quizzes** — a cumulative `<Quiz>` on each part's index page
+mixing questions from all its chapters (spaced repetition; pairs with the per-part
+mastery bar from §4.4).
 
 Work in milestones; each ends in a deployable state. The author reviews each milestone
 before the next starts. **Cadence assumption:** the author studies/writes ~1–2 h on
 weekdays; agent prepares scaffolding, drafts, and verification scripts; the author
 executes every hands-on section personally (that's the learning).
 
-### M0 — Bootstrap (½ day)
-- [ ] Create GitHub repo `odoo-tutorial` with structure from §4.1.
-- [ ] MkDocs Material configured: theme, nav skeleton (all 40 chapters as stubs),
-      admonitions, mermaid, code annotations.
-- [ ] GitHub Actions: deploy to Pages on push. Verify live URL.
-- [ ] `code/docker-compose.yml` for Odoo 18 + Postgres 16, tested end-to-end
+### M0 — Bootstrap (½ day) — ✅ done 2026-07-10 (then rebuilt on the D3 stack, see changelog)
+- [x] Create GitHub repo `odoo-tutorial` with structure from §4.1.
+- [x] Site configured (Next.js + Fumadocs after the D3 pivot): nav skeleton (all 40
+      chapters as stubs), callouts, mermaid, quizzes, progress, odoolings.
+- [x] GitHub Actions: deploy to Pages on push. Verify live URL.
+- [x] `code/docker-compose.yml` for Odoo 19 + Postgres 16, tested end-to-end
       (fresh clone → `docker compose up` → login → install an app).
 - **Acceptance:** live site with skeleton; `docker compose up` works on a clean machine.
 
-### M1 — Part 0 + Part 1 (week 1)
-- [ ] Write chapters 1–7 following the §4.3 template.
-- [ ] Original diagrams (mermaid) for architecture & request lifecycle.
-- [ ] Glossary started (every jargon term used gets an entry the day it appears).
+### M1 — Part 0 + Part 1 (week 1) — ✅ chapters done 2026-07-13; checkmarks pending
+- [x] Chapters 1–4 following the §4.3 template (quizzes included; ch4 hands-on
+      executed for real on odoo:19).
+- [x] Chapters 5–7 written 2026-07-13, hands-on executed for real (ch05/ch06
+      odoolings checks green; OCA clone measurements in ch7 are live data).
+- [x] Original diagrams (mermaid) for architecture & request lifecycle.
+- [x] Glossary started (every jargon term used gets an entry the day it appears).
+- [ ] Sidebar completion checkmarks (§4.4) as M1 wrap-up.
 - **Acceptance:** a Python dev with no Odoo background gets a running dev env and
   understands the ecosystem map, verified by the author actually doing it.
 
 ### M2 — Part 2 (weeks 2–3) — the heart of the tutorial
-- [ ] Chapters 8–15 with checkpoints `ch08`–`ch15` committed and installable.
+- [ ] **Gate: author signs off on the §5.5 LibreFleet blueprint.**
+- [ ] Chapters 8–15 with checkpoints `ch08`–`ch15` committed and installable, each
+      registering odoolings checks; exercises graded per §5.6; break-it labs where
+      instructive.
 - [ ] Every chapter's Verify section includes at least one `odoo-bin shell` or psql
       inspection so readers see what the ORM does under the hood.
-- **Acceptance:** LibreFleet core installs from any checkpoint; author can rebuild it
-  from memory (self-test at end of part).
+- [ ] Quiz persistence + per-part mastery, `<Term>` tooltips, predict-the-output
+      quiz variant (§4.4); Part 2 review quiz.
+- [ ] `boss2` challenge: spec page + odoolings check set + solution checkpoint.
+- **Acceptance:** LibreFleet core installs from any checkpoint; author completes
+  `boss2` from the spec alone with odoolings green.
 
 ### M3 — Parts 3 & 4 (weeks 4–6)
 - [ ] Chapters 16–28 + checkpoints; test suite grows with ch28 and CI (`ci.yml`)
       starts running module tests on every push.
+- [ ] `boss3` + `boss4` challenges; Part 3/4 review quizzes.
 - **Acceptance:** CI green; PDF report renders; portal page works logged-in and
-  logged-out; ≥ 15 meaningful tests.
+  logged-out; ≥ 15 meaningful tests; author clears both bosses.
 
 ### M4 — Part 5 (weeks 7–8)
-- [ ] Chapters 29–32; OWL dashboard functional.
+- [ ] Chapters 29–32; OWL dashboard functional; `boss5`; Part 5 review quiz.
 - **Acceptance:** custom widget + client action work with `--dev=all` hot reload.
 
 ### M5 — Parts 6 & 7 (weeks 9–11)
 - [ ] Chapters 33–40; pre-commit adopted repo-wide; the extracted OCA-style module
       passes `pre-commit run -a` and has readme fragments.
 - [ ] Author makes one real (small) OCA contribution as the ch35 exercise.
+- [ ] ch37 interactive migration checklist (§4.4).
 - **Acceptance:** the extracted module would plausibly survive an OCA review;
-  migration exercise completed against a real 17.0 module.
+  migration exercise completed against a real 18.0 module (18→19).
 
 ### M6 — Polish & launch (week 12)
 - [ ] Full read-through edit; consistency pass on admonitions and footers.
@@ -391,9 +508,13 @@ executes every hands-on section personally (that's the learning).
 ### Standing rules for the agent
 1. **Never ship unexecuted code.** Run every snippet in the Docker env; paste real
    output, not imagined output.
-2. **Verify version-sensitive facts** against the 18.0 docs before writing; add an
-   "Odoo 19 changed this" box when the 19.0 docs differ.
+2. **Verify version-sensitive facts** against the 19.0 docs before writing; add an
+   "On Odoo 18 this differs" box when the 18.0 docs differ (readers may be on older
+   client projects).
 3. **Original prose and images only** (see §1.4). Link, don't copy.
+3b. **Style: natural, conversational prose; no em dashes** (author preference,
+    2026-07-13). Use commas, colons, parentheses or a new sentence instead. En
+    dashes in numeric ranges (`1–7`) are fine.
 4. Small PRs per chapter; the author reviews and *manually re-executes* each Hands-on
    before merge — this is the learning loop, do not optimize it away.
 5. Maintain `docs/glossary.md` and the §5.4 checklist continuously.
@@ -419,11 +540,12 @@ executes every hands-on section personally (that's the learning).
 
 ## 8. Canonical Link Index (seed list for chapter "Further reading" sections)
 
-- Official docs (18.0): developer home, Server framework 101, ORM reference, view
+- Official docs (19.0): developer home, Server framework 101, ORM reference, view
   reference, OWL tutorials, testing, QWeb reports, controllers —
-  `https://www.odoo.com/documentation/18.0/developer.html`
-- Official docs (19.0) for delta boxes: `https://www.odoo.com/documentation/19.0/`
-- Odoo source: `https://github.com/odoo/odoo` (branch `18.0`)
+  `https://www.odoo.com/documentation/19.0/developer.html`
+- Official docs (18.0) for "On Odoo 18 this differs" boxes:
+  `https://www.odoo.com/documentation/18.0/`
+- Odoo source: `https://github.com/odoo/odoo` (branch `19.0`)
 - OCA: `https://github.com/OCA` · contribute guide:
   `https://www.odoo-community.org/get-involved/contribute` · guidelines repo:
   `OCA/odoo-community.org` · `OCA/maintainer-tools` · `OCA/OpenUpgrade` ·
@@ -438,10 +560,59 @@ executes every hands-on section personally (that's the learning).
 3. Will your team confirm the Odoo version your projects run? If most client work is
    on 16/17, add a short "working on older versions" appendix.
 4. ~~Public from day 1?~~ **Answered 2026-07-10: public from day 1.**
+5. Sign off on the §5.5 LibreFleet blueprint (models/fields/security). Gate for M2 —
+   added 2026-07-13.
 
 ---
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
+
+### 2026-07-13 (later) — M1 chapters complete; content style pass
+- **Chapters 5–7 written (Part 1 — Environment), M1 content done.** Every command
+  executed for real: compose lifecycle, `odoo db init/duplicate/drop/dump` (19's
+  filestore-aware db command), `odoo shell` (incl. the commit gotcha), OCA
+  branch-per-version measured live (server-tools: 32 modules on 19.0 vs 73 on 16.0),
+  real `[TAG]` commit messages quoted. `--dev=all` facts verified against the
+  container (`all` = access,reload,qweb,xml on 19).
+- **odoolings: ch06 checks added** (login + "Ada Lovelace partner created from shell
+  exists" — fails with a commit-hint if the reader skips `env.cr.commit()`; verified
+  both red and green paths). Success message reworded (no em dash).
+- **Style rule added (standing rule 3b): natural prose, no em dashes** (author
+  request). All existing content (ch1–4, index, glossary, roadmap, stubs) swept
+  clean; exercises in ch1–4 retrofitted with §5.6 ⭐ grades; ch5–7 written with
+  grades and one break-it lab each (ch5 `down -v`, ch6 stopped db container).
+- Glossary +8 terms (filestore, master password, env, odoo shell, commit tags,
+  pinning...). `librefleet.vehicle` naming aligned in odoolings sample/comment.
+  `code/odoo.conf` comment made reader-facing. Roadmap page: M1 ✅.
+- Still open before M2: author sign-off on §5.5 blueprint (§9 Q5); sidebar
+  completion checkmarks (§4.4) remain the last M1 wrap-up item.
+
+### 2026-07-13 — plan consistency pass + detail/challenge/interactivity upgrades
+- **Body of the plan reconciled with the July-10 pivots.** The D1 (Odoo 19) and D3
+  (Next.js/Fumadocs) revisions had only been logged here in the changelog; §4
+  (repo tree, site conventions, chapter template), §5.3 (ch5, ch37), §6 (standing
+  rule 2, milestone statuses), and §8 (link index) still described the MkDocs/18.0
+  world. All rewritten to match reality, so a cold-start agent no longer follows
+  stale instructions. M0 ticked done; M1 marked ch1–4 done.
+- **New §5.5 — LibreFleet blueprint:** full data model (5 models, fields, relations,
+  security groups) mapped to the chapters that introduce each piece, fixed before M2
+  so the capstone grows coherently. **Author sign-off on it is the new M2 gate**
+  (§9 Q5).
+- **New §5.6 — challenge design** (author asked for "more challenging" 2026-07-13):
+  graded exercises (⭐ apply / ⭐⭐ transfer / ⭐⭐⭐ stretch), **boss challenges**
+  ending Parts 2–5 (spec-only mini-builds verified by odoolings `bossN` check sets,
+  replacing the unverifiable "rebuild from memory" self-test), **break-it labs**
+  (deliberately trigger and debug the failure each chapter protects against —
+  traceback literacy as a first-class skill), and cumulative end-of-part review
+  quizzes.
+- **New §4.4 — interactive mechanics inventory & roadmap** (author asked for "more
+  interactive"): documents what's built (Quiz, odoolings, progress pill, Mermaid) and
+  schedules what's next — sidebar completion checkmarks (M1 wrap-up), quiz
+  persistence + per-part mastery bar (M2), `<Term>` glossary tooltips (M2),
+  predict-the-output quiz variant (M2, recordsets chapter), ch37 migration checklist
+  (M5). Still no accounts/backend by design.
+- Chapter template (§4.3) now formally includes the Quick check section and the
+  odoolings authoring rule; quizzes must test ideas, not syntax recall.
 
 ### 2026-07-10 (later still) — LibreFleet signed off; chapters 1–4 written
 - **Capstone confirmed: LibreFleet** (§9 Q2 closed). Part 2+ can be planned in detail.
