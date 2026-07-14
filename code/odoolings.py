@@ -106,6 +106,33 @@ def vehicle_plate_required(env):
     assert f and f["required"], "license_plate is not required=True"
 
 
+def workshop_groups_exist(env):
+    for xmlid in ("librefleet.group_librefleet_user", "librefleet.group_librefleet_manager"):
+        res = env.call("ir.model.data", "check_object_reference",
+                       xmlid.split(".")[0], xmlid.split(".")[1])
+        assert res and res[0] == "res.groups", "%s does not resolve to a res.groups record" % xmlid
+
+
+def vehicle_acls_exist(env):
+    acls = env.call("ir.model.access", "search_count",
+                    [("model_id.model", "=", "librefleet.vehicle")])
+    assert acls >= 2, ("found %d access rules for librefleet.vehicle, expected one "
+                       "per group (user + manager)" % acls)
+
+
+def admin_reads_vehicles(env):
+    ids = env.call("librefleet.vehicle", "search", [])
+    assert ids, "admin got an empty vehicle list; are the ch09 vehicles still there?"
+
+
+def technician_exists_in_group(env):
+    users = env.call("res.users", "search_read",
+                     [("login", "=", "tina")], fields=["group_ids"])
+    assert users, "no user with login 'tina'"
+    gid = env.call("ir.model.data", "check_object_reference", "librefleet", "group_librefleet_user")[1]
+    assert gid in users[0]["group_ids"], "'tina' is not in the Workshop / User group"
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -148,6 +175,21 @@ CHAPTERS = {
          "Text, active is Boolean. Upgrade after every change."),
         ("license_plate is required", vehicle_plate_required,
          "Add required=True to the license_plate field and upgrade."),
+    ],
+    "ch10": [
+        ("Workshop User and Manager groups exist", workshop_groups_exist,
+         "Define both res.groups records in security/librefleet_security.xml with "
+         "ids group_librefleet_user and group_librefleet_manager, list the file in "
+         "the manifest's data, and upgrade."),
+        ("librefleet.vehicle has access rules", vehicle_acls_exist,
+         "Add security/ir.model.access.csv with one line per group and list it in "
+         "the manifest AFTER the security XML (the CSV references the groups)."),
+        ("admin can read vehicles over XML-RPC", admin_reads_vehicles,
+         "This failed in ch09 by design. It passes once the ACLs exist and admin "
+         "is in the Workshop / Manager group (the users field on the group record)."),
+        ("technician user 'tina' exists in Workshop / User", technician_exists_in_group,
+         "Create the user from odoo shell as in the hands-on (login 'tina', "
+         "group_ids includes librefleet.group_librefleet_user) and env.cr.commit()."),
     ],
 }
 
