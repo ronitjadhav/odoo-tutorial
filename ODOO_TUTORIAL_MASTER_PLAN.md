@@ -568,6 +568,32 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-14 (night) — ch12 written (relations + the deferred record rule)
+- **Ch12 written and fully executed**: `librefleet.service.order` +
+  `librefleet.service.order.line` + `librefleet.part` per §5.5 (ch12 scope only:
+  no reference/customer_id/computed totals yet, those are ch13/14 as planned);
+  vehicle gains `owner_id` (res.partner) + `service_order_ids`. All three
+  `ondelete` policies used deliberately (restrict on order.vehicle_id, cascade on
+  line.order_id, default set null on line.part_id) and read back from psql as real
+  ON DELETE clauses; m2m relation table
+  `librefleet_service_order_res_users_rel` shown. Views: order list/form with
+  `many2many_tags` + inline editable o2m lines; parts editable list; two new
+  menus. Seed data: 2 owners, 3 parts, 2 orders (snippet shipped as
+  `checkpoints/ch12/seed_ch12.py`).
+- **Ch10's deferred record rule landed** with the manager-lockout trap taught
+  live: technician rule alone locks admin out (Manager implies User → rule
+  applies; "Uh-oh! ... top-secret records" AccessError quoted), then fixed with
+  the standard [(1,'=',1)] manager rule. Both directions verified as tina and
+  admin, plus over RPC in odoolings' functional check.
+- **Break-it lab**: wrong One2many inverse name → registry-setup ValueError
+  ("'service_order_id' declared in ... does not exist on ..."), quoted verbatim.
+  ForeignKeyViolation from unlinking a vehicle with orders (restrict) also quoted.
+- odoolings `ch12` added (6 checks incl. a fully functional rule check that logs
+  in as tina over XML-RPC and expects the AccessError), run red then green;
+  ch08–ch11 still green; fresh-install green. Checkpoint `ch12`; version
+  19.0.1.4.0. Glossary +8 (command list, domain, many2many, many2one, ondelete,
+  one2many, Selection field, widget). Roadmap: M2 ch 8–12.
+
 ### 2026-07-14 (evening) — ch11 written (menus, actions, first views)
 - **Ch11 written and fully executed**: `librefleet.service.type` added per §5.5
   (name/flat_fee/default_duration_h, `_order="name"`, user read-only + manager full

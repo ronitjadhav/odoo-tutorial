@@ -185,6 +185,92 @@ def technician_exists_in_group(env):
     assert gid in users[0]["group_ids"], "'tina' is not in the Workshop / User group"
 
 
+def _model_fields(env, model):
+    fields = {f["name"]: f for f in env.call(
+        "ir.model.fields", "search_read", [("model", "=", model)],
+        fields=["name", "ttype", "required", "relation", "relation_field"])}
+    assert fields, "no model %r registered in this database" % model
+    return fields
+
+
+def _expect_field(fields, model, name, ttype, relation=None, required=None):
+    assert name in fields, "field %r is missing on %s" % (name, model)
+    f = fields[name]
+    assert f["ttype"] == ttype, "%s.%s is %r, expected %r" % (model, name, f["ttype"], ttype)
+    if relation:
+        assert f["relation"] == relation, (
+            "%s.%s points at %r, expected %r" % (model, name, f["relation"], relation))
+    if required is not None:
+        assert f["required"] == required, (
+            "%s.%s required is %r, expected %r" % (model, name, f["required"], required))
+
+
+def vehicle_relations(env):
+    f = _model_fields(env, "librefleet.vehicle")
+    _expect_field(f, "librefleet.vehicle", "owner_id", "many2one", "res.partner")
+    _expect_field(f, "librefleet.vehicle", "service_order_ids", "one2many", "librefleet.service.order")
+    assert f["service_order_ids"]["relation_field"] == "vehicle_id", (
+        "service_order_ids must be the inverse of librefleet.service.order.vehicle_id")
+
+
+def order_model_shape(env):
+    m = "librefleet.service.order"
+    f = _model_fields(env, m)
+    _expect_field(f, m, "vehicle_id", "many2one", "librefleet.vehicle", required=True)
+    _expect_field(f, m, "service_type_id", "many2one", "librefleet.service.type")
+    _expect_field(f, m, "technician_ids", "many2many", "res.users")
+    _expect_field(f, m, "line_ids", "one2many", "librefleet.service.order.line")
+    _expect_field(f, m, "stage", "selection")
+    _expect_field(f, m, "scheduled_start", "datetime")
+    _expect_field(f, m, "scheduled_end", "datetime")
+
+
+def part_and_line_shape(env):
+    f = _model_fields(env, "librefleet.part")
+    for name, ttype in [("name", "char"), ("code", "char"),
+                        ("standard_cost", "float"), ("list_price", "float")]:
+        _expect_field(f, "librefleet.part", name, ttype)
+    m = "librefleet.service.order.line"
+    f = _model_fields(env, m)
+    _expect_field(f, m, "order_id", "many2one", "librefleet.service.order", required=True)
+    _expect_field(f, m, "part_id", "many2one", "librefleet.part")
+    _expect_field(f, m, "qty", "float")
+    _expect_field(f, m, "price_unit", "float")
+
+
+def new_models_have_acls(env):
+    for model in ("librefleet.service.order", "librefleet.service.order.line", "librefleet.part"):
+        n = env.call("ir.model.access", "search_count", [("model_id.model", "=", model)])
+        assert n >= 2, "found %d access rules for %s, expected one per group" % (n, model)
+
+
+def order_record_rules(env):
+    rules = env.call("ir.rule", "search_count",
+                     [("model_id.model", "=", "librefleet.service.order")])
+    assert rules >= 2, ("found %d record rules on service orders, expected the "
+                        "technician rule AND the manager all-access rule" % rules)
+
+
+def technician_rule_enforced(env):
+    tina_env = Env(env.url, env.db, "tina", "technician")
+    tina_env.login()
+    uid = tina_env.uid
+    mine = tina_env.call("librefleet.service.order", "search",
+                         [("technician_ids", "in", [uid])])
+    others = tina_env.call("librefleet.service.order", "search",
+                           [("technician_ids", "not in", [uid])])
+    assert mine, "no service order assigned to tina; create the ch12 demo orders"
+    assert others, "no service order WITHOUT tina; create the ch12 demo orders"
+    tina_env.call("librefleet.service.order", "write", mine[:1], {"stage": "confirmed"})
+    tina_env.call("librefleet.service.order", "write", mine[:1], {"stage": "draft"})
+    try:
+        tina_env.call("librefleet.service.order", "write", others[:1], {"stage": "confirmed"})
+    except xmlrpc.client.Fault:
+        return
+    raise AssertionError("tina could write a service order she is not assigned to; "
+                         "is the technician record rule active?")
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -262,6 +348,32 @@ CHAPTERS = {
         ("Configuration menu is manager-only", config_menu_manager_only,
          "Put groups=\"group_librefleet_manager\" on the Configuration <menuitem> "
          "(id menu_librefleet_config) so technicians don't see it."),
+    ],
+    "ch12": [
+        ("vehicle has owner_id and service_order_ids", vehicle_relations,
+         "owner_id is Many2one('res.partner'); service_order_ids is "
+         "One2many('librefleet.service.order', 'vehicle_id'), the inverse of the "
+         "order's vehicle_id."),
+        ("service order model has the right shape", order_model_shape,
+         "Check models/service_order.py against the chapter: vehicle_id required "
+         "Many2one, service_type_id Many2one, technician_ids Many2many to "
+         "res.users, line_ids One2many, stage Selection, scheduled_start/end "
+         "Datetime. Upgrade after each change."),
+        ("part and order line models have the right shape", part_and_line_shape,
+         "librefleet.part: name/code Char, standard_cost/list_price Float. "
+         "Order line: order_id required Many2one, part_id Many2one, qty and "
+         "price_unit Float."),
+        ("the three new models have access rules", new_models_have_acls,
+         "Every model needs its lines in security/ir.model.access.csv, one per "
+         "group, or it is invisible (chapter 9 taught you how that looks)."),
+        ("service orders have record rules", order_record_rules,
+         "Two ir.rule records in security/librefleet_security.xml: the technician "
+         "write-own-orders rule for Workshop / User AND the [(1,'=',1)] rule for "
+         "Workshop / Manager (without it, managers get caught by the user rule)."),
+        ("technicians can only write their own orders", technician_rule_enforced,
+         "Log tina's work: she must be in technician_ids of at least one demo "
+         "order and absent from another. Writing hers succeeds, writing the other "
+         "must raise AccessError. Check the rule's domain and perm_write."),
     ],
 }
 
