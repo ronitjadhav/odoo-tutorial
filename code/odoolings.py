@@ -125,6 +125,58 @@ def admin_reads_vehicles(env):
     assert ids, "admin got an empty vehicle list; are the ch09 vehicles still there?"
 
 
+def service_type_fields_typed(env):
+    fields = {f["name"]: f for f in env.call(
+        "ir.model.fields", "search_read",
+        [("model", "=", "librefleet.service.type")],
+        fields=["name", "ttype", "required"])}
+    assert fields, "no model 'librefleet.service.type' registered in this database"
+    for name, ttype in {"name": "char", "flat_fee": "float", "default_duration_h": "float"}.items():
+        assert name in fields, "field %r is missing on librefleet.service.type" % name
+        assert fields[name]["ttype"] == ttype, (
+            "field %r is %r, expected %r" % (name, fields[name]["ttype"], ttype))
+    assert fields["name"]["required"], "service type 'name' is not required=True"
+
+
+def service_type_acls_exist(env):
+    acls = env.call("ir.model.access", "search_count",
+                    [("model_id.model", "=", "librefleet.service.type")])
+    assert acls >= 2, ("found %d access rules for librefleet.service.type, "
+                       "expected one per group" % acls)
+
+
+def vehicle_action_exists(env):
+    res = env.call("ir.model.data", "check_object_reference",
+                   "librefleet", "action_librefleet_vehicle")
+    assert res[0] == "ir.actions.act_window", "librefleet.action_librefleet_vehicle is not a window action"
+    act = env.call("ir.actions.act_window", "read", [res[1]], ["res_model", "view_mode"])[0]
+    assert act["res_model"] == "librefleet.vehicle", "the action's res_model is %r" % act["res_model"]
+    assert act["view_mode"] == "list,form", "view_mode is %r, expected 'list,form'" % act["view_mode"]
+
+
+def root_menu_exists(env):
+    res = env.call("ir.model.data", "check_object_reference",
+                   "librefleet", "menu_librefleet_root")
+    assert res[0] == "ir.ui.menu", "librefleet.menu_librefleet_root is not a menu"
+
+
+def vehicle_views_exist(env):
+    views = env.call("ir.ui.view", "search_read",
+                     [("model", "=", "librefleet.vehicle")], fields=["type"])
+    types = {v["type"] for v in views}
+    assert "list" in types, "no list view defined for librefleet.vehicle (remember: <list>, not <tree>)"
+    assert "form" in types, "no form view defined for librefleet.vehicle"
+
+
+def config_menu_manager_only(env):
+    res = env.call("ir.model.data", "check_object_reference",
+                   "librefleet", "menu_librefleet_config")
+    menu = env.call("ir.ui.menu", "read", [res[1]], ["group_ids"])[0]
+    mgr = env.call("ir.model.data", "check_object_reference",
+                   "librefleet", "group_librefleet_manager")[1]
+    assert mgr in menu["group_ids"], "the Configuration menu is not restricted to Workshop / Manager"
+
+
 def technician_exists_in_group(env):
     users = env.call("res.users", "search_read",
                      [("login", "=", "tina")], fields=["group_ids"])
@@ -190,6 +242,26 @@ CHAPTERS = {
         ("technician user 'tina' exists in Workshop / User", technician_exists_in_group,
          "Create the user from odoo shell as in the hands-on (login 'tina', "
          "group_ids includes librefleet.group_librefleet_user) and env.cr.commit()."),
+    ],
+    "ch11": [
+        ("librefleet.service.type model with the right fields", service_type_fields_typed,
+         "Create models/service_type.py (name Char required, flat_fee Float, "
+         "default_duration_h Float), import it in models/__init__.py, upgrade."),
+        ("service types have access rules", service_type_acls_exist,
+         "Every new model needs its own lines in security/ir.model.access.csv "
+         "(user read-only, manager full), or it stays invisible like ch09's vehicle."),
+        ("vehicle window action exists with view_mode list,form", vehicle_action_exists,
+         "Define ir.actions.act_window with id action_librefleet_vehicle, "
+         "res_model librefleet.vehicle and view_mode list,form in views/vehicle_views.xml."),
+        ("LibreFleet root menu exists", root_menu_exists,
+         "Add <menuitem id=\"menu_librefleet_root\" .../> in views/librefleet_menus.xml "
+         "and list the file in the manifest (after the views it references)."),
+        ("vehicle list and form views defined", vehicle_views_exist,
+         "Add both <list> and <form> views for librefleet.vehicle in "
+         "views/vehicle_views.xml. On Odoo 19 the list tag is <list>, not <tree>."),
+        ("Configuration menu is manager-only", config_menu_manager_only,
+         "Put groups=\"group_librefleet_manager\" on the Configuration <menuitem> "
+         "(id menu_librefleet_config) so technicians don't see it."),
     ],
 }
 
