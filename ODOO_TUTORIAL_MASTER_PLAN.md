@@ -568,6 +568,31 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-14 (evening) — ch11 written (menus, actions, first views)
+- **Ch11 written and fully executed**: `librefleet.service.type` added per §5.5
+  (name/flat_fee/default_duration_h, `_order="name"`, user read-only + manager full
+  ACLs), vehicle list+form views, window action with empty-state help, editable
+  list for service types (`view_mode` list only), five-menuitem tree (root with
+  web_icon, Fleet/Vehicles, manager-only Configuration/Service Types). Menu
+  visibility proven with `_visible_menu_ids` as tina vs admin (note: plain
+  `ir.ui.menu.search` does NOT filter by groups; the web client uses
+  `_visible_menu_ids`). Three service types seeded. Fresh-install test green.
+- **Break-it lab**: `licence_plate` typo in the list arch → upgrade fails with the
+  full ParseError (file/line/arch/complaint anatomy) AND the transaction rolls back
+  (verified in psql: the old arch kept serving). Restored, re-upgraded.
+- **Odoo 19 facts verified in-container:** view type selection is
+  `['list', 'form', 'graph', 'pivot', 'calendar', 'kanban', 'search', 'qweb']`, no
+  `tree`; creating a `<tree>` arch raises `Invalid view type: 'tree'` (called out
+  vs 18 and OCA back-branches). Undefined view types are auto-generated
+  (`get_views` returned a generated two-column form for service.type). Menu hiding
+  is UX not security: tina reads service types over RPC despite the hidden menu
+  (taught as a gotcha).
+- odoolings `ch11` added (service.type fields / ACLs / action with view_mode
+  list,form / root menu / vehicle list+form views / config menu manager-only), run
+  red then green; ch08–ch10 still green. Checkpoint `ch11`; version 19.0.1.3.0.
+  Glossary +6 (arch, editable list, form view, list view, menu item, window
+  action). Roadmap: M2 ch 8–11.
+
 ### 2026-07-14 (later) — ch10 written (security first); record rule deferred to ch12
 - **Ch10 written and fully executed**: Workshop privilege + User/Manager groups
   (`security/librefleet_security.xml`), vehicle ACLs (user 1,1,0,0 / manager
