@@ -568,6 +568,33 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-14 (later) — ch10 written (security first); record rule deferred to ch12
+- **Ch10 written and fully executed**: Workshop privilege + User/Manager groups
+  (`security/librefleet_security.xml`), vehicle ACLs (user 1,1,0,0 / manager
+  1,1,1,1), admin added to Manager via `user_ids`, technician user `tina` created
+  from shell, permissions felt via `with_user` (create denied with the
+  group-naming AccessError, quoted live). Fresh-install discipline taught via the
+  break-it lab: swapping the manifest data order upgrades FINE on the dev db but
+  kills a fresh install ("No matching record found for external id"), demonstrated
+  on a throwaway db. Checkpoint `ch10`; module version bumped to 19.0.1.2.0.
+- **§5.5 deviation, decided:** the blueprint put the technicians-write-their-own-
+  orders record rule in ch10, but `librefleet.service.order` only exists from ch12.
+  Ch10 teaches the ACL-vs-record-rule concept and previews `ir.rule` in a ⭐⭐⭐
+  exercise; the real rule lands in ch12 with the model. Blueprint §5.5 stays as the
+  target state.
+- **Odoo 19 facts verified in-container (differ from 18, called out in-chapter):**
+  `res.groups` lost `category_id` and `users` (now `privilege_id` via new model
+  `res.groups.privilege`, and `user_ids`); `res.users.groups_id` is now
+  `group_ids`. Core idiom copied from `hr_security.xml` (privilege record, manager
+  implies user, admin added on the manager group). Also verified: a long-running
+  server does NOT pick up groups/ACLs loaded by a CLI upgrade process (restart
+  required; taught as a gotcha), and the no-ACL RPC error is "Object ... doesn't
+  exist" (ties back to the ch09 finding).
+- odoolings `ch10` added (groups exist / ACLs exist / admin reads vehicles over RPC,
+  which is ch09's failure inverted / tina in Workshop User), run red then green;
+  ch05–ch09 still green. Glossary +6 (access rights, group, privilege, record rule,
+  superuser, XML id). Roadmap: M2 ch 8–10.
+
 ### 2026-07-14 — ch09 written (models & fields), first real model shipped
 - **Ch09 written and fully executed**: `librefleet.vehicle` added per the §5.5
   blueprint (`license_plate` required, `vin`, `model_name`, `year`, `mileage_km`,

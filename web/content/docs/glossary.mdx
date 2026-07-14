@@ -3,6 +3,11 @@ title: Glossary
 description: Every piece of Odoo jargon, defined the day a chapter first uses it.
 ---
 
+**access rights (ACL)**: `ir.model.access` records, conventionally loaded from
+`security/ir.model.access.csv`, granting a group read/write/create/unlink on one
+model. Additive across groups (rights union, never subtract) and model-wide; see
+*record rule* for per-record filtering.
+
 **addon**: see *module*. The two words are used interchangeably; `--addons-path` is
 the directory list Odoo scans for them.
 
@@ -50,6 +55,10 @@ operations (sales, stock, accounting...), so every department sees the same fact
 (one subdirectory per database). Binary content lives here, not in PostgreSQL; in the
 tutorial's Docker setup it sits in the `odoo-data` volume.
 
+**group**: a `res.groups` record permissions are granted to (users are never granted
+rights directly). Groups can imply other groups (`implied_ids`): members of the
+implying group automatically hold everything the implied group has.
+
 **integrator / partner**: a company implementing Odoo for clients: configuration,
 custom modules, migrations, support. Most Odoo developers work at one.
 
@@ -92,6 +101,10 @@ client since Odoo 14.
 commit or package version so a production build is reproducible from the project repo
 alone. Done with git submodules, git-aggregator, or pip requirements.
 
+**privilege**: `res.groups.privilege`, new in Odoo 19: the row that gathers related
+groups ("Workshop" holding User and Manager) on the user form. Replaces the direct
+group-to-category link older versions used.
+
 **PSC**: Project Steering Committee, the maintainers governing one OCA repository.
 
 **QWeb**: Odoo's XML templating engine, used both server-side (PDF reports, website
@@ -106,12 +119,27 @@ by importing every installed module's Python. `env["librefleet.vehicle"]` is a
 registry lookup. Rebuilt on restart; the database schema only changes at
 install/upgrade.
 
+**record rule**: an `ir.rule` filtering *which records* of a model a group may
+touch, via a domain ("only orders assigned to you"). The per-record layer on top of
+access rights, which are model-wide. LibreFleet's first one lands in chapter 12.
+
 **Runboat**: OCA infrastructure that spins up a throwaway live Odoo instance for every
 pull request, so reviewers can click through changes.
 
 **smart button**: the stat buttons at the top of a form view linking to related
 records ("3 Orders", "2 Deliveries"). You'll build one in chapter 17.
 
+**superuser**: uid 1 (`__system__`), the internal account that bypasses access
+rights and record rules entirely. `odoo shell` runs as it, `sudo()` switches to it.
+Not the same thing as the `admin` login, which is an ordinary user with powerful
+groups.
+
 **technical name**: a module's directory name (`librefleet`), as opposed to its
 display `name` ("LibreFleet"). Used by `-i`/`-u`, `depends`, XML ids and table
 prefixes; effectively immutable once a module ships.
+
+**XML id (external id)**: the stable handle a data record is registered under
+(`librefleet.group_librefleet_user`), used by `ref()` in XML, `env.ref()` in Python,
+and CSV reference columns. Resolves against the database, which is why a missing one
+only fails where the record was never loaded (fresh installs). Chapter 24 goes
+deeper.
