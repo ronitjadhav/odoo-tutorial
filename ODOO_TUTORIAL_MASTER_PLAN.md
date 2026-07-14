@@ -568,6 +568,27 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-14 — ch09 written (models & fields), first real model shipped
+- **Ch09 written and fully executed**: `librefleet.vehicle` added per the §5.5
+  blueprint (`license_plate` required, `vin`, `model_name`, `year`, `mileage_km`,
+  `notes`, `active` default True) plus `_rec_name = "license_plate"` (taught via
+  observe-the-ugly-fallback-then-fix; `display_name` showed `"librefleet.vehicle,1"`
+  live). Table inspected via `\d`, records created/committed from shell, archiving
+  demoed (`active_test=False`). Break-it lab: commenting the model import and
+  upgrading silently *deletes the model's metadata* (INFO-level only) while the
+  table and rows survive; recovery verified.
+- **Facts verified live, two corrected assumptions worth remembering:** (1) in 19,
+  removing a *field* and upgrading DROPS its column (metadata prune cascades to
+  `ALTER TABLE ... DROP COLUMN`), unlike removing a whole *model*, which keeps the
+  table; ch09 exercise 1 teaches the real behavior. (2) A no-ACL model over XML-RPC
+  answers "Object librefleet.vehicle doesn't exist" (no AccessError), so odoolings
+  ch09 checks read `ir.model` / `ir.model.fields` instead of the model itself; the
+  record-visibility check belongs to ch10.
+- odoolings `ch09` added (model registered / field types / required flag), run red
+  then green. Checkpoint `code/checkpoints/ch09/` committed; module version bumped
+  to 19.0.1.1.0. Glossary +5 (archiving, automatic fields, display_name, model,
+  registry). Roadmap: M2 ch 8–9.
+
 ### 2026-07-13 (evening, later) — blueprint signed off; M2 started with ch08
 - **§5.5 LibreFleet blueprint approved by the author (§9 Q5 closed). M2 unblocked.**
 - **Ch08 written and executed for real**: `code/addons/librefleet/` created

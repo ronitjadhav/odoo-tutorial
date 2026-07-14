@@ -78,6 +78,34 @@ def librefleet_is_app(env):
     assert _librefleet_module(env)["application"], "'application' is not True in the manifest"
 
 
+def vehicle_model_exists(env):
+    ids = env.call("ir.model", "search", [("model", "=", "librefleet.vehicle")])
+    assert ids, "no model 'librefleet.vehicle' registered in this database"
+
+
+def _vehicle_fields(env):
+    return {f["name"]: f for f in env.call(
+        "ir.model.fields", "search_read",
+        [("model", "=", "librefleet.vehicle")],
+        fields=["name", "ttype", "required"])}
+
+
+def vehicle_fields_typed(env):
+    expected = {"license_plate": "char", "vin": "char", "model_name": "char",
+                "year": "integer", "mileage_km": "float", "notes": "text",
+                "active": "boolean"}
+    actual = _vehicle_fields(env)
+    for name, ttype in expected.items():
+        assert name in actual, "field %r is missing on librefleet.vehicle" % name
+        assert actual[name]["ttype"] == ttype, (
+            "field %r is %r, expected %r" % (name, actual[name]["ttype"], ttype))
+
+
+def vehicle_plate_required(env):
+    f = _vehicle_fields(env).get("license_plate")
+    assert f and f["required"], "license_plate is not required=True"
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -109,9 +137,18 @@ CHAPTERS = {
          "Set \"application\": True in __manifest__.py and upgrade, so LibreFleet "
          "appears on the Apps home screen."),
     ],
-    # Chapters 9+ add checks as they are written, e.g. "model librefleet.vehicle
-    # exists", "field mileage is Float" — via env.call('ir.model', ...) and
-    # fields_get().
+    "ch09": [
+        ("model librefleet.vehicle is registered", vehicle_model_exists,
+         "Did you create models/vehicle.py with _name = 'librefleet.vehicle', "
+         "import it from models/__init__.py AND the top-level __init__.py, then "
+         "upgrade? New Python code needs -u librefleet --stop-after-init."),
+        ("vehicle fields have the right types", vehicle_fields_typed,
+         "Compare your field definitions with the chapter: license_plate/vin/"
+         "model_name are Char, year is Integer, mileage_km is Float, notes is "
+         "Text, active is Boolean. Upgrade after every change."),
+        ("license_plate is required", vehicle_plate_required,
+         "Add required=True to the license_plate field and upgrade."),
+    ],
 }
 
 

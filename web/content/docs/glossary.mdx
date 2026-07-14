@@ -8,6 +8,14 @@ the directory list Odoo scans for them.
 
 **addons path**: the ordered list of directories Odoo searches for modules.
 
+**archiving**: setting `active = False` on a record. Archived records keep their data
+and relations but are hidden from `search()` unless the `active_test=False` context
+asks for them. Odoo's "soft delete" (chapter 9).
+
+**automatic fields**: the columns the ORM maintains on every model without being
+asked: `id`, `create_uid`, `create_date`, `write_uid`, `write_date`, plus the
+computed (never stored) `display_name`.
+
 **chatter**: the message/activity feed at the bottom (or side) of most form views:
 emails, notes, followers, scheduled activities. Models opt in via `mail.thread`
 (chapter 23).
@@ -23,6 +31,10 @@ created without it.
 **developer mode**: a per-session backend mode (`?debug=1` or Settings → General
 Settings) that reveals technical field tooltips and the Settings → Technical menu.
 `debug=assets` additionally serves unminified JS/CSS.
+
+**display_name**: the one-line string Odoo uses to present a record (breadcrumbs,
+dropdowns). Computed on demand from the field `_rec_name` points at, which defaults
+to a field literally named `name`; with neither, you get the `"model,id"` fallback.
 
 **edition**: Community (open source, LGPL-3) or Enterprise (paid superset with extra
 apps, hosted options and the upgrade service). This tutorial uses Community.
@@ -56,6 +68,10 @@ login password.
 views, data, or code to an Odoo database. An *app* is just a module with
 `'application': True`.
 
+**model**: a Python class extending `models.Model` whose `_name` (like
+`librefleet.vehicle`) identifies it everywhere: `env[...]` lookups, and the Postgres
+table name with dots turned into underscores. Its fields become the table's columns.
+
 **OCA**: Odoo Community Association. A Swiss nonprofit hosting hundreds of
 community-maintained module repositories at [github.com/OCA](https://github.com/OCA).
 
@@ -84,6 +100,11 @@ pages) and client-side (OWL component templates).
 **recordset**: the value every ORM operation returns: an ordered collection of records
 of one model, which may hold zero, one, or many. Methods called on it apply to all of
 them.
+
+**registry**: the in-memory catalog of all models a server process builds at startup
+by importing every installed module's Python. `env["librefleet.vehicle"]` is a
+registry lookup. Rebuilt on restart; the database schema only changes at
+install/upgrade.
 
 **Runboat**: OCA infrastructure that spins up a throwaway live Odoo instance for every
 pull request, so reviewers can click through changes.
