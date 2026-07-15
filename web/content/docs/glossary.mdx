@@ -29,6 +29,11 @@ computed (never stored) `display_name`.
 emails, notes, followers, scheduled activities. Models opt in via `mail.thread`
 (chapter 23).
 
+**command list (x2many commands)**: the tuple language for writing relational
+fields: `(0, 0, {vals})` create, `(4, id)` link, `(3, id)` unlink, `(2, id)`
+delete, `(6, 0, [ids])` replace all. Spelled `Command.create/link/set/...` since
+Odoo 15; the tuples remain everywhere in existing code.
+
 **commit tags**: the `[TAG] module: description` convention Odoo and the OCA use for
 commit messages: `[FIX]` bugfix, `[IMP]` improvement, `[ADD]` new feature/module,
 `[MIG]` migration to a version, `[REF]` refactor.
@@ -44,6 +49,11 @@ Settings) that reveals technical field tooltips and the Settings → Technical m
 **display_name**: the one-line string Odoo uses to present a record (breadcrumbs,
 dropdowns). Computed on demand from the field `_rec_name` points at, which defaults
 to a field literally named `name`; with neither, you get the `"model,id"` fallback.
+
+**domain**: the list-of-tuples filter language used by `search()`, record rules and
+filters: `[("license_plate", "=", "ZH 468 202")]`. Conditions AND together by
+default; `"|"` and `"&"` prefix operators change that. Domains can walk relations
+with dots (`order_id.technician_ids`).
 
 **edition**: Community (open source, LGPL-3) or Enterprise (paid superset with extra
 apps, hosted options and the upgrade service). This tutorial uses Community.
@@ -84,6 +94,14 @@ Odoo 17, removed in 19). Each `<field>` in the arch is a column.
 version, `depends`, data files, and license. Its presence is what makes a directory a
 module.
 
+**many2many**: the both-ways relation (`technician_ids` on orders, orders on
+technicians) stored as an automatic table of id pairs in Postgres. Plural `_ids`
+naming, like one2many.
+
+**many2one**: *the* relation: an integer column holding another record's id, with a
+real foreign key and an `ondelete` policy. Singular `_id` naming. One2many and
+many2many are built on top of it.
+
 **master password**: the `admin_passwd` option in `odoo.conf`. It guards
 database-manager operations (create, duplicate, drop), and is unrelated to any user's
 login password.
@@ -110,6 +128,14 @@ sells Enterprise subscriptions and hosting (Odoo Online, odoo.sh).
 **odoo shell**: `odoo shell -d <db>`, a Python REPL with a fully loaded `env`. The
 best place to experiment with the ORM. It never commits by itself; writes need an
 explicit `env.cr.commit()`.
+
+**ondelete**: the many2one policy for when the referenced record is deleted:
+`set null` (default, forget the link), `restrict` (block the deletion), `cascade`
+(delete me too). Becomes a real `ON DELETE` clause in Postgres.
+
+**one2many**: the mirror of a many2one, declared with the comodel and the inverse
+field name. Stored nowhere: it is a live query over the comodel's many2one, which
+is why it cannot exist without one.
 
 **ORM**: Odoo's object-relational mapper, the layer that turns Python model classes
 into PostgreSQL tables and back.
@@ -146,6 +172,10 @@ access rights, which are model-wide. LibreFleet's first one lands in chapter 12.
 **Runboat**: OCA infrastructure that spins up a throwaway live Odoo instance for every
 pull request, so reviewers can click through changes.
 
+**Selection field**: a field storing one key from a closed list of
+`(key, "Label")` pairs, a `varchar` in Postgres. LibreFleet's order `stage` is one;
+chapter 17 dresses it as a statusbar.
+
 **smart button**: the stat buttons at the top of a form view linking to related
 records ("3 Orders", "2 Deliveries"). You'll build one in chapter 17.
 
@@ -157,6 +187,10 @@ groups.
 **technical name**: a module's directory name (`librefleet`), as opposed to its
 display `name` ("LibreFleet"). Used by `-i`/`-u`, `depends`, XML ids and table
 prefixes; effectively immutable once a module ships.
+
+**widget**: an attribute on a view field picking an alternative renderer for the
+same data (`widget="many2many_tags"` shows chips instead of a table). Chapter 17
+tours the built-ins; chapter 30 builds one.
 
 **window action**: an `ir.actions.act_window` record saying what to open: the
 model (`res_model`) and the view types in order (`view_mode="list,form"`). The glue
