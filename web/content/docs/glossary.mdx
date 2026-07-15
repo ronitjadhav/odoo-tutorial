@@ -38,6 +38,11 @@ Odoo 15; the tuples remain everywhere in existing code.
 commit messages: `[FIX]` bugfix, `[IMP]` improvement, `[ADD]` new feature/module,
 `[MIG]` migration to a version, `[REF]` refactor.
 
+**computed field**: a field filled by a method instead of the user, with
+`@api.depends` declaring exactly which fields the value derives from (the ORM's
+recompute triggers). Non-stored by default (no column, computed on read);
+`store=True` adds a real column recomputed when dependencies change.
+
 **demo data**: fictional records (customers, products, orders) a module can load into
 a database *at creation time only*, for training and testing. Production databases are
 created without it.
@@ -133,6 +138,10 @@ explicit `env.cr.commit()`.
 `set null` (default, forget the link), `restrict` (block the deletion), `cascade`
 (delete me too). Becomes a real `ON DELETE` clause in Postgres.
 
+**onchange**: a method (`@api.onchange("field")`) run while a user edits a form,
+before saving, typically to prefill other fields. Never fires from code, imports or
+RPC, so it is a typing assistant, not a business rule.
+
 **one2many**: the mirror of a many2one, declared with the comodel and the inverse
 field name. Stored nowhere: it is a live query over the comodel's many2one, which
 is why it cannot exist without one.
@@ -159,6 +168,10 @@ pages) and client-side (OWL component templates).
 **recordset**: the value every ORM operation returns: an ordered collection of records
 of one model, which may hold zero, one, or many. Methods called on it apply to all of
 them.
+
+**related field**: a computed field the framework writes for you from a path:
+`related="vehicle_id.owner_id"` mirrors the value at the end of the path and
+updates when it changes. Storable like any computed field.
 
 **registry**: the in-memory catalog of all models a server process builds at startup
 by importing every installed module's Python. `env["librefleet.vehicle"]` is a
