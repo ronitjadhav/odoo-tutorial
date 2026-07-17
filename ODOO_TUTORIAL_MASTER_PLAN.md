@@ -568,6 +568,37 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-17 — ch14 written (constraints, defaults, sequences)
+- **Ch14 written and fully executed** per §5.5's ch14 column: SQL unique constraint
+  on `vehicle.license_plate`, Python `@api.constrains` on `vehicle.year`
+  (1900..next year), the `librefleet.service.order` no-overlap `@api.constrains`
+  (interval test + cancelled/self exclusion), the `ir.sequence` (`data/ir_sequence.xml`,
+  `noupdate=1`, prefix `SO/%(year)s/`) and `reference` field (callable default via
+  `next_by_code`, `copy=False`, `_rec_name`). All three guards verified firing over
+  the shell; legacy orders backfilled to `SO/2026/0001`–`0002`.
+- **Odoo 19 API change captured (feeds ch37):** `_sql_constraints` is deprecated in 19
+  in favor of the `models.Constraint` pseudo-field. The running server warns
+  `Model attribute '_sql_constraints' is no longer supported`. Chapter teaches
+  `models.Constraint` as the 19 baseline with an "On Odoo 18 this differs" callout for
+  the old tuple list. Add to the 18→19 deprecation list that ch37 mines.
+- **Break-it lab**: sequence gap demo (draw `0003`, rollback, next create gets `0004`)
+  proves sequences are non-transactional; ties to the callable-default caveat (a
+  number is burned when the form opens). ⭐⭐⭐ exercise moves the draw into a
+  `create` override for gap-free numbering (forward ref to ch15).
+- **Workflow gotcha surfaced (not yet fixed):** `dev = all` in `code/odoo.conf` is
+  silently ignored on Odoo 19 (`unknown option 'dev'`; it is a CLI-only flag), so the
+  long-running server does NOT auto-reload Python. Python-level changes (constrains,
+  computes) need `docker compose restart odoo`; the `-u ... --stop-after-init` upgrade
+  runs in a throwaway process and only updates the DB schema. Chapters already say
+  "upgrade and restart", so content is correct, but ch06's `--dev=all` hot-reload
+  promise is not actually active in the reader's env. **Open item:** either pass
+  `--dev=all` on the compose command line or soften the ch06 claim (defer to M3 polish).
+- odoolings `ch14` added (4 checks): unique constraint introspected via
+  `ir.model.constraint`; year and overlap checks *attempt* a bad create over RPC and
+  assert the server refuses it (proves the guard fires, not just that a method
+  exists); reference/sequence existence + no `New` leftovers. Green; ch08–ch13 still
+  green. Checkpoint `ch14`; version bumped to 19.0.1.7.0.
+
 ### 2026-07-15 — ch13 written (computed, related, onchange)
 - **Ch13 written and fully executed** per §5.5's ch13 column: stored
   `line.subtotal` (+ inline list column), non-stored order

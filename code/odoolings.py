@@ -361,6 +361,63 @@ def vehicle_service_count(env):
             % (v["id"], v["service_count"], n))
 
 
+def _expect_fault(fn, msg):
+    """Assert that an RPC call is refused by the server (constraint fired)."""
+    try:
+        fn()
+    except xmlrpc.client.Fault:
+        return
+    raise AssertionError(msg)
+
+
+def vehicle_plate_unique(env):
+    cons = env.call("ir.model.constraint", "search_read",
+                    [("model.model", "=", "librefleet.vehicle"), ("type", "=", "u")],
+                    fields=["definition"])
+    assert any("license_plate" in (c.get("definition") or "") for c in cons), (
+        "no UNIQUE database constraint covering license_plate on librefleet.vehicle")
+
+
+def vehicle_year_constrained(env):
+    _expect_fault(
+        lambda: env.call("librefleet.vehicle", "create",
+                         {"license_plate": "ODOOLINGS-YR", "year": 1850}),
+        "a vehicle with model year 1850 was accepted; the @api.constrains on year is "
+        "missing or too loose")
+
+
+def order_reference_from_sequence(env):
+    assert env.call("ir.sequence", "search_count",
+                    [("code", "=", "librefleet.service.order")]), \
+        "no ir.sequence with code 'librefleet.service.order' (check data/ir_sequence.xml)"
+    orders = env.call("librefleet.service.order", "search_read", [],
+                      fields=["reference"])
+    assert orders, "no service orders in the database"
+    for o in orders:
+        ref = o["reference"]
+        assert ref and ref != "New", (
+            "order %d still has reference %r; backfill legacy orders from the sequence"
+            % (o["id"], ref))
+
+
+def order_no_overlap(env):
+    booked = env.call("librefleet.service.order", "search_read",
+                      [("scheduled_start", "!=", False),
+                       ("scheduled_end", "!=", False),
+                       ("stage", "!=", "cancelled")],
+                      fields=["vehicle_id", "scheduled_start", "scheduled_end"],
+                      limit=1)
+    assert booked, "need one scheduled, non-cancelled order to test overlap; keep the demo data"
+    b = booked[0]
+    _expect_fault(
+        lambda: env.call("librefleet.service.order", "create",
+                         {"vehicle_id": b["vehicle_id"][0],
+                          "scheduled_start": b["scheduled_start"],
+                          "scheduled_end": b["scheduled_end"]}),
+        "a booking overlapping an existing one on the same vehicle was accepted; "
+        "the @api.constrains overlap check is missing")
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -485,6 +542,24 @@ CHAPTERS = {
         ("vehicle.service_count matches reality", vehicle_service_count,
          "service_count is a non-stored computed Integer: for each record, "
          "len(rec.service_order_ids). Remember to loop over self in the compute."),
+    ],
+    "ch14": [
+        ("license_plate has a UNIQUE database constraint", vehicle_plate_unique,
+         "Add _license_plate_unique = models.Constraint('unique(license_plate)', "
+         "'...') on librefleet.vehicle (Odoo 19 replaced _sql_constraints with "
+         "models.Constraint). Upgrade after adding it."),
+        ("vehicle rejects an out-of-range model year", vehicle_year_constrained,
+         "Add an @api.constrains('year') method that raises ValidationError when "
+         "year is outside a sane range (e.g. 1900..next year). Constrains run in "
+         "Python on create/write, so they fire over RPC too."),
+        ("service orders get a reference from the sequence", order_reference_from_sequence,
+         "Define the ir.sequence (data/ir_sequence.xml, code "
+         "'librefleet.service.order') and give reference a default that calls "
+         "next_by_code. Backfill any legacy orders still reading 'New'."),
+        ("overlapping bookings on the same vehicle are refused", order_no_overlap,
+         "Add an @api.constrains('scheduled_start','scheduled_end','vehicle_id') "
+         "that searches for another non-cancelled order on the same vehicle whose "
+         "window overlaps (start < other_end AND end > other_start)."),
     ],
 }
 
