@@ -271,6 +271,96 @@ def technician_rule_enforced(env):
                          "is the technician record rule active?")
 
 
+def _close(a, b):
+    return abs(a - b) < 0.005
+
+
+def line_subtotal_computed(env):
+    f = _model_fields(env, "librefleet.service.order.line")
+    _expect_field(f, "librefleet.service.order.line", "subtotal", "float")
+    lines = env.call("librefleet.service.order.line", "search_read", [],
+                     fields=["qty", "price_unit", "subtotal"])
+    assert lines, "no order lines in the database; keep the ch12 demo data around"
+    for l in lines:
+        assert _close(l["subtotal"], l["qty"] * l["price_unit"]), (
+            "line %d: subtotal %s != qty %s * price_unit %s"
+            % (l["id"], l["subtotal"], l["qty"], l["price_unit"]))
+
+
+def order_totals_computed(env):
+    orders = env.call("librefleet.service.order", "search_read", [],
+                      fields=["parts_total", "labor_total", "margin",
+                              "service_type_id", "line_ids"])
+    assert orders, "no service orders in the database"
+    for o in orders:
+        lines = env.call("librefleet.service.order.line", "search_read",
+                         [("order_id", "=", o["id"])],
+                         fields=["subtotal", "qty", "part_id"])
+        parts = sum(l["subtotal"] for l in lines)
+        assert _close(o["parts_total"], parts), (
+            "order %d: parts_total %s, expected %s (sum of line subtotals)"
+            % (o["id"], o["parts_total"], parts))
+        fee = 0.0
+        if o["service_type_id"]:
+            fee = env.call("librefleet.service.type", "read",
+                           [o["service_type_id"][0]], ["flat_fee"])[0]["flat_fee"]
+        assert _close(o["labor_total"], fee), (
+            "order %d: labor_total %s, expected the service type's flat fee %s"
+            % (o["id"], o["labor_total"], fee))
+        cost = 0.0
+        for l in lines:
+            if l["part_id"]:
+                std = env.call("librefleet.part", "read",
+                               [l["part_id"][0]], ["standard_cost"])[0]["standard_cost"]
+                cost += l["qty"] * std
+        assert _close(o["margin"], parts + fee - cost), (
+            "order %d: margin %s, expected parts+labor-cost = %s"
+            % (o["id"], o["margin"], parts + fee - cost))
+
+
+def customer_follows_owner(env):
+    f = _model_fields(env, "librefleet.service.order")
+    _expect_field(f, "librefleet.service.order", "customer_id", "many2one", "res.partner")
+    stored = env.call("ir.model.fields", "search_read",
+                      [("model", "=", "librefleet.service.order"), ("name", "=", "customer_id")],
+                      fields=["store", "related"])[0]
+    assert stored["related"] == "vehicle_id.owner_id", (
+        "customer_id related is %r, expected 'vehicle_id.owner_id'" % stored["related"])
+    assert stored["store"], "customer_id must be stored (store=True) per the blueprint"
+    orders = env.call("librefleet.service.order", "search_read", [],
+                      fields=["customer_id", "vehicle_id"])
+    for o in orders:
+        owner = env.call("librefleet.vehicle", "read",
+                         [o["vehicle_id"][0]], ["owner_id"])[0]["owner_id"]
+        assert (o["customer_id"] or False) == (owner or False) or \
+               (o["customer_id"] and owner and o["customer_id"][0] == owner[0]), (
+            "order %d: customer_id %s but the vehicle's owner is %s"
+            % (o["id"], o["customer_id"], owner))
+
+
+def totals_not_stored(env):
+    rows = env.call("ir.model.fields", "search_read",
+                    [("model", "=", "librefleet.service.order"),
+                     ("name", "in", ["parts_total", "labor_total", "margin"])],
+                    fields=["name", "store"])
+    assert len(rows) == 3, "parts_total, labor_total and margin must all exist"
+    for r in rows:
+        assert not r["store"], ("%s is stored; the chapter keeps the order totals "
+                                "non-stored (compare with line subtotal)" % r["name"])
+
+
+def vehicle_service_count(env):
+    vehicles = env.call("librefleet.vehicle", "search_read", [],
+                        fields=["service_count"])
+    assert vehicles, "no vehicles in the database"
+    for v in vehicles:
+        n = env.call("librefleet.service.order", "search_count",
+                     [("vehicle_id", "=", v["id"])])
+        assert v["service_count"] == n, (
+            "vehicle %d: service_count is %s but it has %d orders"
+            % (v["id"], v["service_count"], n))
+
+
 # Each chapter: list of (description, check_fn, hint shown on failure).
 CHAPTERS = {
     "ch05": [
@@ -374,6 +464,27 @@ CHAPTERS = {
          "Log tina's work: she must be in technician_ids of at least one demo "
          "order and absent from another. Writing hers succeeds, writing the other "
          "must raise AccessError. Check the rule's domain and perm_write."),
+    ],
+    "ch13": [
+        ("line subtotals are computed and stored", line_subtotal_computed,
+         "subtotal = fields.Float(compute='_compute_subtotal', store=True) with "
+         "@api.depends('qty', 'price_unit'). Did you upgrade after adding it?"),
+        ("order totals add up (parts, labor, margin)", order_totals_computed,
+         "parts_total sums line subtotals, labor_total mirrors the service type's "
+         "flat_fee, margin = parts + labor - what the parts cost you. Check your "
+         "@api.depends paths: dotted ones like 'line_ids.subtotal' are allowed "
+         "and required."),
+        ("order totals are NOT stored", totals_not_stored,
+         "Leave store off the three order totals: they are cheap to compute and "
+         "this chapter wants you to see the difference in psql."),
+        ("customer_id is a stored related field that follows the owner",
+         customer_follows_owner,
+         "customer_id = fields.Many2one(related='vehicle_id.owner_id', "
+         "store=True). Stored related fields update automatically when the "
+         "source changes; if yours lags, check the related= path."),
+        ("vehicle.service_count matches reality", vehicle_service_count,
+         "service_count is a non-stored computed Integer: for each record, "
+         "len(rec.service_order_ids). Remember to loop over self in the compute."),
     ],
 }
 

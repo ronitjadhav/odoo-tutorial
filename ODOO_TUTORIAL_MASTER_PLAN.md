@@ -568,6 +568,29 @@ executes every hands-on section personally (that's the learning).
 
 ## 10. Changelog (running log — update whenever a decision or milestone changes)
 
+### 2026-07-15 — ch13 written (computed, related, onchange)
+- **Ch13 written and fully executed** per §5.5's ch13 column: stored
+  `line.subtotal` (+ inline list column), non-stored order
+  `parts_total`/`labor_total`/`margin` (one compute method, dotted depends incl.
+  `line_ids.part_id.standard_cost`), stored related `customer_id`
+  (vehicle_id.owner_id), non-stored `vehicle.service_count` (stat button itself
+  stays ch17 as planned), `@api.onchange(part_id)` prefilling `price_unit`.
+  Margin hidden from technicians via view-level `groups=` (ties back to ch10).
+  Live demos captured: qty write rippling through stored + non-stored fields
+  (100.1/89/139.1 → 119/148.5), owner change instantly updating the stored
+  related on the order, and onchange NOT firing on shell create (price 0.0),
+  which anchors the "onchange is UX sugar" lesson.
+- **Break-it lab**: deleted @api.depends on subtotal → silently stale stored
+  value (qty 3, subtotal 24.5) proven in psql; **restoring the decorator does not
+  heal existing rows** (verified), only touching a dependency does. Taught as
+  "code fix + recompute step" production practice.
+- odoolings `ch13` added: functional checks that independently recompute totals /
+  related / count over RPC and compare (catch wrong depends, not just missing
+  fields), plus store-flag assertions (subtotal stored, totals not). Run red then
+  green; ch08–ch12 still green; fresh install green. Checkpoint `ch13`; version
+  19.0.1.5.0. Glossary +3 (computed field, onchange, related field). Roadmap: M2
+  ch 8–13.
+
 ### 2026-07-14 (night) — ch12 written (relations + the deferred record rule)
 - **Ch12 written and fully executed**: `librefleet.service.order` +
   `librefleet.service.order.line` + `librefleet.part` per §5.5 (ch12 scope only:
