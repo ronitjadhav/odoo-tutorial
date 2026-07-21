@@ -43,6 +43,21 @@ commit messages: `[FIX]` bugfix, `[IMP]` improvement, `[ADD]` new feature/module
 recompute triggers). Non-stored by default (no column, computed on read);
 `store=True` adds a real column recomputed when dependencies change.
 
+**constraint (Python)**: a validation method decorated `@api.constrains(*fields)`
+that raises `ValidationError` when a rule is broken. Runs in the ORM on every write
+path (form, import, RPC, shell, code) but never on raw SQL, and only re-runs when a
+field it lists changes. Use it for rules that need judgment or other records
+(chapter 14).
+
+**constraint (SQL)**: a database-level rule (`UNIQUE`, `CHECK`, foreign key) enforced
+by Postgres itself, so nothing bypasses it, not even raw SQL. Declared on Odoo 19 with
+`models.Constraint` (see that entry). Limited to what SQL can express (chapter 14).
+
+**default value**: a field's starting value on a new record, set with `default=`.
+Static (`default="draft"`) or a callable (`default=lambda self: ...`) evaluated once
+per record for dynamic values like today's date or the next sequence number. Fires on
+every creation path (chapter 14).
+
 **demo data**: fictional records (customers, products, orders) a module can load into
 a database *at creation time only*, for training and testing. Production databases are
 created without it.
@@ -124,6 +139,11 @@ views, data, or code to an Odoo database. An *app* is just a module with
 `librefleet.vehicle`) identifies it everywhere: `env[...]` lookups, and the Postgres
 table name with dots turned into underscores. Its fields become the table's columns.
 
+**models.Constraint**: the Odoo 19 way to declare an *SQL constraint* on a model:
+`_name_uniq = models.Constraint("unique(name)", "message")`. The attribute name
+becomes the Postgres constraint name; it replaces the pre-19 `_sql_constraints` list
+(chapter 14).
+
 **OCA**: Odoo Community Association. A Swiss nonprofit hosting hundreds of
 community-maintained module repositories at [github.com/OCA](https://github.com/OCA).
 
@@ -189,6 +209,11 @@ pull request, so reviewers can click through changes.
 `(key, "Label")` pairs, a `varchar` in Postgres. LibreFleet's order `stage` is one;
 chapter 17 dresses it as a statusbar.
 
+**sequence (ir.sequence)**: a named, concurrency-safe counter with a prefix, padding
+and optional per-period reset, read with `next_by_code("code")`. Non-transactional by
+design, so drawn numbers survive rollbacks and the counter has gaps. Powers order and
+invoice references (chapter 14).
+
 **smart button**: the stat buttons at the top of a form view linking to related
 records ("3 Orders", "2 Deliveries"). You'll build one in chapter 17.
 
@@ -200,6 +225,10 @@ groups.
 **technical name**: a module's directory name (`librefleet`), as opposed to its
 display `name` ("LibreFleet"). Used by `-i`/`-u`, `depends`, XML ids and table
 prefixes; effectively immutable once a module ships.
+
+**ValidationError**: the exception (`from odoo.exceptions import ValidationError`) a
+Python constraint raises to reject a write. Odoo rolls the transaction back and shows
+its message to the user (chapter 14).
 
 **widget**: an attribute on a view field picking an alternative renderer for the
 same data (`widget="many2many_tags"` shows chips instead of a table). Chapter 17
